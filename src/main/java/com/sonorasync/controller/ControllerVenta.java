@@ -1,4 +1,5 @@
 package com.sonorasync.controller;
+
 import com.sonorasync.dao.DaoVenta;
 import com.sonorasync.service.ServiceVenta;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,14 @@ import java.util.List;
 public class ControllerVenta {
     @Autowired private ServiceVenta service;
     @GetMapping public List<DaoVenta> findAll() { return service.findAll(); }
-    @GetMapping("/{id}") public ResponseEntity<DaoVenta> findById(@PathVariable Long id) { return ResponseEntity.ok(service.findById(id)); }
+    @GetMapping("/{id}") public ResponseEntity<DaoVenta> findById(@PathVariable Long id) {
+        DaoVenta dao = service.findById(id);
+        return dao != null ? ResponseEntity.ok(dao) : ResponseEntity.notFound().build();
+    }
     @PostMapping public ResponseEntity<DaoVenta> save(@RequestBody DaoVenta dao) { return ResponseEntity.ok(service.save(dao)); }
-    @PutMapping("/{id}") public ResponseEntity<DaoVenta> update(@PathVariable Long id, @RequestBody DaoVenta dao) { return ResponseEntity.ok(service.update(id, dao)); }
-    @DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable Long id) { service.delete(id); return ResponseEntity.ok().build(); }
+    @PutMapping("/{id}") public ResponseEntity<DaoVenta> update(@PathVariable Long id, @RequestBody DaoVenta dao) {
+        DaoVenta updated = service.update(id, dao);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
+    }
+    @DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable Long id) { service.delete(id); return ResponseEntity.noContent().build(); }
 }

@@ -1,4 +1,5 @@
 package com.sonorasync.service;
+
 import com.sonorasync.dao.DaoDetalleVenta;
 import com.sonorasync.model.DetalleVenta;
 import com.sonorasync.repository.RepositoryDetalleVenta;

@@ -1,4 +1,5 @@
 package com.sonorasync.service;
+
 import com.sonorasync.dao.DaoInscripcion;
 import com.sonorasync.model.Inscripcion;
 import com.sonorasync.repository.RepositoryInscripcion;

@@ -1,4 +1,5 @@
 package com.sonorasync.service;
+
 import com.sonorasync.dao.DaoConceptoPago;
 import com.sonorasync.model.ConceptoPago;
 import com.sonorasync.repository.RepositoryConceptoPago;

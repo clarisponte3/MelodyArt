@@ -1,4 +1,5 @@
 package com.sonorasync.service;
+
 import com.sonorasync.dao.DaoAsistenciaClase;
 import com.sonorasync.model.AsistenciaClase;
 import com.sonorasync.repository.RepositoryAsistenciaClase;

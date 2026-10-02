@@ -1,4 +1,5 @@
 package com.sonorasync.service;
+
 import com.sonorasync.dao.DaoBitacoraProgreso;
 import com.sonorasync.model.BitacoraProgreso;
 import com.sonorasync.repository.RepositoryBitacoraProgreso;

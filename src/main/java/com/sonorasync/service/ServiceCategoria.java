@@ -1,4 +1,5 @@
 package com.sonorasync.service;
+
 import com.sonorasync.dao.DaoCategoria;
 import com.sonorasync.model.Categoria;
 import com.sonorasync.repository.RepositoryCategoria;

@@ -1,4 +1,5 @@
 package com.sonorasync.service;
+
 import com.sonorasync.dao.DaoEstadoCuenta;
 import com.sonorasync.model.EstadoCuenta;
 import com.sonorasync.repository.RepositoryEstadoCuenta;

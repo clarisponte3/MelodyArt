@@ -1,4 +1,5 @@
 package com.sonorasync.service;
+
 import com.sonorasync.dao.DaoMovimientoInventario;
 import com.sonorasync.model.MovimientoInventario;
 import com.sonorasync.repository.RepositoryMovimientoInventario;
