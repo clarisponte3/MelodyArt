@@ -15,7 +15,7 @@ public class ServiceClaseMusical {
     public DaoClaseMusical findById(Long id) { return repository.findById(id).map(this::toDao).orElse(null); }
     public DaoClaseMusical save(DaoClaseMusical dao) { return toDao(repository.save(toEntity(dao))); }
     public DaoClaseMusical update(Long id, DaoClaseMusical dao) {
-        if (repository.existsById(id)) { ClaseMusical entity = toEntity(dao); entity.setIdClase(id); return toDao(repository.save(entity)); } return null;
+        if (repository.existsById(id)) { ClaseMusical entity = toEntity(dao); entity.setIdClaseMusical(id); return toDao(repository.save(entity)); } return null;
     }
     public void delete(Long id) { repository.deleteById(id); }
     private DaoClaseMusical toDao(ClaseMusical entity) { DaoClaseMusical dao = new DaoClaseMusical(); BeanUtils.copyProperties(entity, dao); return dao; }
