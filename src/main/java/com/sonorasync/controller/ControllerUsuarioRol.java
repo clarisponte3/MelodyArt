@@ -12,15 +12,31 @@ import java.util.List;
 @RequestMapping("/api/usuarios-roles")
 public class ControllerUsuarioRol {
     @Autowired private ServiceUsuarioRol service;
-    @GetMapping public List<DaoUsuarioRol> findAll() { return service.findAll(); }
-    @GetMapping("/{idUsuario}/{idRol}") public ResponseEntity<DaoUsuarioRol> findById(@PathVariable Long idUsuario, @PathVariable Long idRol) {
-        UsuarioRol.UsuarioRolId id = new UsuarioRol.UsuarioRolId(idUsuario, idRol);
+
+    @GetMapping 
+    public List<DaoUsuarioRol> findAll() { 
+        return service.findAll(); 
+    }
+
+    @GetMapping("/{idUsuario}/{idRol}") 
+    public ResponseEntity<DaoUsuarioRol> findById(@PathVariable Long idUsuario, @PathVariable Long idRol) {
+        UsuarioRol.UsuarioRolId id = new UsuarioRol.UsuarioRolId();
+        id.setIdUsuario(idUsuario);
+        id.setIdRol(idRol);
         DaoUsuarioRol dao = service.findById(id);
         return dao != null ? ResponseEntity.ok(dao) : ResponseEntity.notFound().build();
     }
-    @PostMapping public ResponseEntity<DaoUsuarioRol> save(@RequestBody DaoUsuarioRol dao) { return ResponseEntity.ok(service.save(dao)); }
-    @DeleteMapping("/{idUsuario}/{idRol}") public ResponseEntity<Void> delete(@PathVariable Long idUsuario, @PathVariable Long idRol) {
-        UsuarioRol.UsuarioRolId id = new UsuarioRol.UsuarioRolId(idUsuario, idRol);
+
+    @PostMapping 
+    public ResponseEntity<DaoUsuarioRol> save(@RequestBody DaoUsuarioRol dao) { 
+        return ResponseEntity.ok(service.save(dao)); 
+    }
+
+    @DeleteMapping("/{idUsuario}/{idRol}") 
+    public ResponseEntity<Void> delete(@PathVariable Long idUsuario, @PathVariable Long idRol) {
+        UsuarioRol.UsuarioRolId id = new UsuarioRol.UsuarioRolId();
+        id.setIdUsuario(idUsuario);
+        id.setIdRol(idRol);
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

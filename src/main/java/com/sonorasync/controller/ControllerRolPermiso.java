@@ -12,15 +12,31 @@ import java.util.List;
 @RequestMapping("/api/roles-permisos")
 public class ControllerRolPermiso {
     @Autowired private ServiceRolPermiso service;
-    @GetMapping public List<DaoRolPermiso> findAll() { return service.findAll(); }
-    @GetMapping("/{idRol}/{idPermiso}") public ResponseEntity<DaoRolPermiso> findById(@PathVariable Long idRol, @PathVariable Long idPermiso) {
-        RolPermiso.RolPermisoId id = new RolPermiso.RolPermisoId(idRol, idPermiso);
+
+    @GetMapping 
+    public List<DaoRolPermiso> findAll() { 
+        return service.findAll(); 
+    }
+
+    @GetMapping("/{idRol}/{idPermiso}") 
+    public ResponseEntity<DaoRolPermiso> findById(@PathVariable Long idRol, @PathVariable Long idPermiso) {
+        RolPermiso.RolPermisoId id = new RolPermiso.RolPermisoId();
+        id.setIdRol(idRol);
+        id.setIdPermiso(idPermiso);
         DaoRolPermiso dao = service.findById(id);
         return dao != null ? ResponseEntity.ok(dao) : ResponseEntity.notFound().build();
     }
-    @PostMapping public ResponseEntity<DaoRolPermiso> save(@RequestBody DaoRolPermiso dao) { return ResponseEntity.ok(service.save(dao)); }
-    @DeleteMapping("/{idRol}/{idPermiso}") public ResponseEntity<Void> delete(@PathVariable Long idRol, @PathVariable Long idPermiso) {
-        RolPermiso.RolPermisoId id = new RolPermiso.RolPermisoId(idRol, idPermiso);
+
+    @PostMapping 
+    public ResponseEntity<DaoRolPermiso> save(@RequestBody DaoRolPermiso dao) { 
+        return ResponseEntity.ok(service.save(dao)); 
+    }
+
+    @DeleteMapping("/{idRol}/{idPermiso}") 
+    public ResponseEntity<Void> delete(@PathVariable Long idRol, @PathVariable Long idPermiso) {
+        RolPermiso.RolPermisoId id = new RolPermiso.RolPermisoId();
+        id.setIdRol(idRol);
+        id.setIdPermiso(idPermiso);
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
