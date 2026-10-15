@@ -1,24 +1,65 @@
 package com.sonorasync.service;
 
-import com.sonorasync.dao.DaoClaseMusical;
+import com.sonorasync.dto.request.ClaseMusicalRequestDTO;
+import com.sonorasync.dto.response.ClaseMusicalResponseDTO;
 import com.sonorasync.model.ClaseMusical;
 import com.sonorasync.repository.RepositoryClaseMusical;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ServiceClaseMusical {
     @Autowired private RepositoryClaseMusical repository;
-    public List<DaoClaseMusical> findAll() { return repository.findAll().stream().map(this::toDao).collect(Collectors.toList()); }
-    public DaoClaseMusical findById(Long id) { return repository.findById(id).map(this::toDao).orElse(null); }
-    public DaoClaseMusical save(DaoClaseMusical dao) { return toDao(repository.save(toEntity(dao))); }
-    public DaoClaseMusical update(Long id, DaoClaseMusical dao) {
-        if (repository.existsById(id)) { ClaseMusical entity = toEntity(dao); entity.setIdClaseMusical(id); return toDao(repository.save(entity)); } return null;
+
+    public List<ClaseMusicalResponseDTO> findAll() {
+        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
-    public void delete(Long id) { repository.deleteById(id); }
-    private DaoClaseMusical toDao(ClaseMusical entity) { DaoClaseMusical dao = new DaoClaseMusical(); BeanUtils.copyProperties(entity, dao); return dao; }
-    private ClaseMusical toEntity(DaoClaseMusical dao) { ClaseMusical entity = new ClaseMusical(); BeanUtils.copyProperties(dao, entity); return entity; }
+
+    public ClaseMusicalResponseDTO findById(Long id) {
+        return repository.findById(id).map(this::toResponseDTO).orElse(null);
+    }
+
+    public ClaseMusicalResponseDTO save(ClaseMusicalRequestDTO dto) {
+        return toResponseDTO(repository.save(toEntity(dto)));
+    }
+
+    public ClaseMusicalResponseDTO update(Long id, ClaseMusicalRequestDTO dto) {
+        return repository.findById(id).map(entity -> {
+            if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
+            if (dto.getHorario() != null) entity.setHorario(dto.getHorario());
+            if (dto.getCapacidadMaxima() != null) entity.setCapacidadMaxima(dto.getCapacidadMaxima());
+            if (dto.getCosto() != null) entity.setCosto(dto.getCosto());
+            return toResponseDTO(repository.save(entity));
+        }).orElse(null);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    public ClaseMusicalResponseDTO toResponseDTO(ClaseMusical entity) {
+        if (entity == null) return null;
+        ClaseMusicalResponseDTO dto = new ClaseMusicalResponseDTO();
+        dto.setIdClaseMusical(entity.getIdClaseMusical());
+        dto.setNombre(entity.getNombre());
+        dto.setDescripcion(entity.getDescripcion());
+        dto.setHorario(entity.getHorario());
+        dto.setCapacidadMaxima(entity.getCapacidadMaxima());
+        dto.setCosto(entity.getCosto());
+        return dto;
+    }
+
+    public ClaseMusical toEntity(ClaseMusicalRequestDTO dto) {
+        if (dto == null) return null;
+        ClaseMusical entity = new ClaseMusical();
+        if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
+        if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
+        if (dto.getHorario() != null) entity.setHorario(dto.getHorario());
+        if (dto.getCapacidadMaxima() != null) entity.setCapacidadMaxima(dto.getCapacidadMaxima());
+        if (dto.getCosto() != null) entity.setCosto(dto.getCosto());
+        return entity;
+    }
 }

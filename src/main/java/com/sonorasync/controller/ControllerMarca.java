@@ -1,6 +1,7 @@
 package com.sonorasync.controller;
 
-import com.sonorasync.dao.DaoMarca;
+import com.sonorasync.dto.request.MarcaRequestDTO;
+import com.sonorasync.dto.response.MarcaResponseDTO;
 import com.sonorasync.service.ServiceMarca;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,15 +12,32 @@ import java.util.List;
 @RequestMapping("/api/marcas")
 public class ControllerMarca {
     @Autowired private ServiceMarca service;
-    @GetMapping public List<DaoMarca> findAll() { return service.findAll(); }
-    @GetMapping("/{id}") public ResponseEntity<DaoMarca> findById(@PathVariable Long id) {
-        DaoMarca dao = service.findById(id);
-        return dao != null ? ResponseEntity.ok(dao) : ResponseEntity.notFound().build();
+
+    @GetMapping
+    public List<MarcaResponseDTO> findAll() {
+        return service.findAll();
     }
-    @PostMapping public ResponseEntity<DaoMarca> save(@RequestBody DaoMarca dao) { return ResponseEntity.ok(service.save(dao)); }
-    @PutMapping("/{id}") public ResponseEntity<DaoMarca> update(@PathVariable Long id, @RequestBody DaoMarca dao) {
-        DaoMarca updated = service.update(id, dao);
+
+    @GetMapping("/{id}")
+    public ResponseEntity<MarcaResponseDTO> findById(@PathVariable Long id) {
+        MarcaResponseDTO res = service.findById(id);
+        return res != null ? ResponseEntity.ok(res) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<MarcaResponseDTO> save(@RequestBody MarcaRequestDTO request) {
+        return ResponseEntity.ok(service.save(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<MarcaResponseDTO> update(@PathVariable Long id, @RequestBody MarcaRequestDTO request) {
+        MarcaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
-    @DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable Long id) { service.delete(id); return ResponseEntity.noContent().build(); }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -1,6 +1,7 @@
 package com.sonorasync.controller;
 
-import com.sonorasync.dao.DaoCategoria;
+import com.sonorasync.dto.request.CategoriaRequestDTO;
+import com.sonorasync.dto.response.CategoriaResponseDTO;
 import com.sonorasync.service.ServiceCategoria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,15 +12,32 @@ import java.util.List;
 @RequestMapping("/api/categorias")
 public class ControllerCategoria {
     @Autowired private ServiceCategoria service;
-    @GetMapping public List<DaoCategoria> findAll() { return service.findAll(); }
-    @GetMapping("/{id}") public ResponseEntity<DaoCategoria> findById(@PathVariable Long id) {
-        DaoCategoria dao = service.findById(id);
-        return dao != null ? ResponseEntity.ok(dao) : ResponseEntity.notFound().build();
+
+    @GetMapping
+    public List<CategoriaResponseDTO> findAll() {
+        return service.findAll();
     }
-    @PostMapping public ResponseEntity<DaoCategoria> save(@RequestBody DaoCategoria dao) { return ResponseEntity.ok(service.save(dao)); }
-    @PutMapping("/{id}") public ResponseEntity<DaoCategoria> update(@PathVariable Long id, @RequestBody DaoCategoria dao) {
-        DaoCategoria updated = service.update(id, dao);
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoriaResponseDTO> findById(@PathVariable Long id) {
+        CategoriaResponseDTO res = service.findById(id);
+        return res != null ? ResponseEntity.ok(res) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<CategoriaResponseDTO> save(@RequestBody CategoriaRequestDTO request) {
+        return ResponseEntity.ok(service.save(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoriaResponseDTO> update(@PathVariable Long id, @RequestBody CategoriaRequestDTO request) {
+        CategoriaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
-    @DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable Long id) { service.delete(id); return ResponseEntity.noContent().build(); }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

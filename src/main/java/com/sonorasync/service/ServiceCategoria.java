@@ -1,24 +1,59 @@
 package com.sonorasync.service;
 
-import com.sonorasync.dao.DaoCategoria;
+import com.sonorasync.dto.request.CategoriaRequestDTO;
+import com.sonorasync.dto.response.CategoriaResponseDTO;
 import com.sonorasync.model.Categoria;
 import com.sonorasync.repository.RepositoryCategoria;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ServiceCategoria {
     @Autowired private RepositoryCategoria repository;
-    public List<DaoCategoria> findAll() { return repository.findAll().stream().map(this::toDao).collect(Collectors.toList()); }
-    public DaoCategoria findById(Long id) { return repository.findById(id).map(this::toDao).orElse(null); }
-    public DaoCategoria save(DaoCategoria dao) { return toDao(repository.save(toEntity(dao))); }
-    public DaoCategoria update(Long id, DaoCategoria dao) {
-        if (repository.existsById(id)) { Categoria entity = toEntity(dao); entity.setIdCategoria(id); return toDao(repository.save(entity)); } return null;
+
+    public List<CategoriaResponseDTO> findAll() {
+        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
-    public void delete(Long id) { repository.deleteById(id); }
-    private DaoCategoria toDao(Categoria entity) { DaoCategoria dao = new DaoCategoria(); BeanUtils.copyProperties(entity, dao); return dao; }
-    private Categoria toEntity(DaoCategoria dao) { Categoria entity = new Categoria(); BeanUtils.copyProperties(dao, entity); return entity; }
+
+    public CategoriaResponseDTO findById(Long id) {
+        return repository.findById(id).map(this::toResponseDTO).orElse(null);
+    }
+
+    public CategoriaResponseDTO save(CategoriaRequestDTO dto) {
+        return toResponseDTO(repository.save(toEntity(dto)));
+    }
+
+    public CategoriaResponseDTO update(Long id, CategoriaRequestDTO dto) {
+        return repository.findById(id).map(entity -> {
+            if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
+            if (dto.getTipo() != null) entity.setTipo(dto.getTipo());
+            if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
+            return toResponseDTO(repository.save(entity));
+        }).orElse(null);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    public CategoriaResponseDTO toResponseDTO(Categoria entity) {
+        if (entity == null) return null;
+        CategoriaResponseDTO dto = new CategoriaResponseDTO();
+        dto.setIdCategoria(entity.getIdCategoria());
+        dto.setNombre(entity.getNombre());
+        dto.setTipo(entity.getTipo());
+        dto.setDescripcion(entity.getDescripcion());
+        return dto;
+    }
+
+    public Categoria toEntity(CategoriaRequestDTO dto) {
+        if (dto == null) return null;
+        Categoria entity = new Categoria();
+        if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
+        if (dto.getTipo() != null) entity.setTipo(dto.getTipo());
+        if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
+        return entity;
+    }
 }

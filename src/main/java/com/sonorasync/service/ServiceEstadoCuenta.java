@@ -1,24 +1,95 @@
 package com.sonorasync.service;
 
-import com.sonorasync.dao.DaoEstadoCuenta;
+import com.sonorasync.dto.request.EstadoCuentaRequestDTO;
+import com.sonorasync.dto.response.EstadoCuentaResponseDTO;
+import com.sonorasync.model.ConceptoPago;
 import com.sonorasync.model.EstadoCuenta;
+import com.sonorasync.model.Usuario;
+import com.sonorasync.repository.RepositoryConceptoPago;
 import com.sonorasync.repository.RepositoryEstadoCuenta;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.sonorasync.repository.RepositoryUsuario;
+import com.sonorasync.service.ServiceConceptoPago;
+import com.sonorasync.service.ServiceUsuario;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ServiceEstadoCuenta {
     @Autowired private RepositoryEstadoCuenta repository;
-    public List<DaoEstadoCuenta> findAll() { return repository.findAll().stream().map(this::toDao).collect(Collectors.toList()); }
-    public DaoEstadoCuenta findById(Long id) { return repository.findById(id).map(this::toDao).orElse(null); }
-    public DaoEstadoCuenta save(DaoEstadoCuenta dao) { return toDao(repository.save(toEntity(dao))); }
-    public DaoEstadoCuenta update(Long id, DaoEstadoCuenta dao) {
-        if (repository.existsById(id)) { EstadoCuenta entity = toEntity(dao); entity.setIdEstadoCuenta(id); return toDao(repository.save(entity)); } return null;
+    @Autowired private RepositoryUsuario repositoryUsuario;
+    @Autowired private ServiceUsuario serviceUsuario;
+    @Autowired private RepositoryConceptoPago repositoryConceptoPago;
+    @Autowired private ServiceConceptoPago serviceConceptoPago;
+
+    public List<EstadoCuentaResponseDTO> findAll() {
+        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
-    public void delete(Long id) { repository.deleteById(id); }
-    private DaoEstadoCuenta toDao(EstadoCuenta entity) { DaoEstadoCuenta dao = new DaoEstadoCuenta(); BeanUtils.copyProperties(entity, dao); return dao; }
-    private EstadoCuenta toEntity(DaoEstadoCuenta dao) { EstadoCuenta entity = new EstadoCuenta(); BeanUtils.copyProperties(dao, entity); return entity; }
+
+    public EstadoCuentaResponseDTO findById(Long id) {
+        return repository.findById(id).map(this::toResponseDTO).orElse(null);
+    }
+
+    public EstadoCuentaResponseDTO save(EstadoCuentaRequestDTO dto) {
+        return toResponseDTO(repository.save(toEntity(dto)));
+    }
+
+    public EstadoCuentaResponseDTO update(Long id, EstadoCuentaRequestDTO dto) {
+        return repository.findById(id).map(entity -> {
+            if (dto.getIdUsuarioAlumno() != null) {
+                repositoryUsuario.findById(dto.getIdUsuarioAlumno()).ifPresent(entity::setAlumno);
+            }
+            if (dto.getIdConceptoPago() != null) {
+                repositoryConceptoPago.findById(dto.getIdConceptoPago()).ifPresent(entity::setConceptoPago);
+            }
+            if (dto.getPeriodo() != null) entity.setPeriodo(dto.getPeriodo());
+            if (dto.getFechaEmision() != null) entity.setFechaEmision(dto.getFechaEmision());
+            if (dto.getFechaVencimiento() != null) entity.setFechaVencimiento(dto.getFechaVencimiento());
+            if (dto.getMonto() != null) entity.setMonto(dto.getMonto());
+            if (dto.getEstado() != null) entity.setEstado(dto.getEstado());
+            return toResponseDTO(repository.save(entity));
+        }).orElse(null);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    public EstadoCuentaResponseDTO toResponseDTO(EstadoCuenta entity) {
+        if (entity == null) return null;
+        EstadoCuentaResponseDTO dto = new EstadoCuentaResponseDTO();
+        dto.setIdEstadoCuenta(entity.getIdEstadoCuenta());
+        if (entity.getAlumno() != null) {
+            dto.setAlumno(serviceUsuario.toResponseDTO(entity.getAlumno()));
+        }
+        if (entity.getConceptoPago() != null) {
+            dto.setConceptoPago(serviceConceptoPago.toResponseDTO(entity.getConceptoPago()));
+        }
+        dto.setPeriodo(entity.getPeriodo());
+        dto.setFechaEmision(entity.getFechaEmision());
+        dto.setFechaVencimiento(entity.getFechaVencimiento());
+        dto.setMonto(entity.getMonto());
+        dto.setEstado(entity.getEstado());
+        return dto;
+    }
+
+    public EstadoCuenta toEntity(EstadoCuentaRequestDTO dto) {
+        if (dto == null) return null;
+        EstadoCuenta entity = new EstadoCuenta();
+        if (dto.getIdUsuarioAlumno() != null) {
+            repositoryUsuario.findById(dto.getIdUsuarioAlumno()).ifPresent(entity::setAlumno);
+        }
+        if (dto.getIdConceptoPago() != null) {
+            repositoryConceptoPago.findById(dto.getIdConceptoPago()).ifPresent(entity::setConceptoPago);
+        }
+        if (dto.getPeriodo() != null) entity.setPeriodo(dto.getPeriodo());
+        if (dto.getFechaEmision() != null) entity.setFechaEmision(dto.getFechaEmision());
+        if (dto.getFechaVencimiento() != null) entity.setFechaVencimiento(dto.getFechaVencimiento());
+        if (dto.getMonto() != null) entity.setMonto(dto.getMonto());
+        if (dto.getEstado() != null) entity.setEstado(dto.getEstado());
+        return entity;
+    }
 }

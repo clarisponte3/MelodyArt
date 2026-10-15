@@ -1,24 +1,94 @@
 package com.sonorasync.service;
 
-import com.sonorasync.dao.DaoBitacoraProgreso;
+import com.sonorasync.dto.request.BitacoraProgresoRequestDTO;
+import com.sonorasync.dto.response.BitacoraProgresoResponseDTO;
 import com.sonorasync.model.BitacoraProgreso;
+import com.sonorasync.model.Inscripcion;
+import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryBitacoraProgreso;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.sonorasync.repository.RepositoryInscripcion;
+import com.sonorasync.repository.RepositoryUsuario;
+import com.sonorasync.service.ServiceInscripcion;
+import com.sonorasync.service.ServiceUsuario;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ServiceBitacoraProgreso {
     @Autowired private RepositoryBitacoraProgreso repository;
-    public List<DaoBitacoraProgreso> findAll() { return repository.findAll().stream().map(this::toDao).collect(Collectors.toList()); }
-    public DaoBitacoraProgreso findById(Long id) { return repository.findById(id).map(this::toDao).orElse(null); }
-    public DaoBitacoraProgreso save(DaoBitacoraProgreso dao) { return toDao(repository.save(toEntity(dao))); }
-    public DaoBitacoraProgreso update(Long id, DaoBitacoraProgreso dao) {
-        if (repository.existsById(id)) { BitacoraProgreso entity = toEntity(dao); entity.setIdBitacora(id); return toDao(repository.save(entity)); } return null;
+    @Autowired private RepositoryInscripcion repositoryInscripcion;
+    @Autowired private ServiceInscripcion serviceInscripcion;
+    @Autowired private RepositoryUsuario repositoryUsuario;
+    @Autowired private ServiceUsuario serviceUsuario;
+
+    public List<BitacoraProgresoResponseDTO> findAll() {
+        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
-    public void delete(Long id) { repository.deleteById(id); }
-    private DaoBitacoraProgreso toDao(BitacoraProgreso entity) { DaoBitacoraProgreso dao = new DaoBitacoraProgreso(); BeanUtils.copyProperties(entity, dao); return dao; }
-    private BitacoraProgreso toEntity(DaoBitacoraProgreso dao) { BitacoraProgreso entity = new BitacoraProgreso(); BeanUtils.copyProperties(dao, entity); return entity; }
+
+    public BitacoraProgresoResponseDTO findById(Long id) {
+        return repository.findById(id).map(this::toResponseDTO).orElse(null);
+    }
+
+    public BitacoraProgresoResponseDTO save(BitacoraProgresoRequestDTO dto) {
+        return toResponseDTO(repository.save(toEntity(dto)));
+    }
+
+    public BitacoraProgresoResponseDTO update(Long id, BitacoraProgresoRequestDTO dto) {
+        return repository.findById(id).map(entity -> {
+            if (dto.getIdInscripcion() != null) {
+                repositoryInscripcion.findById(dto.getIdInscripcion()).ifPresent(entity::setInscripcion);
+            }
+            if (dto.getIdProfesor() != null) {
+                repositoryUsuario.findById(dto.getIdProfesor()).ifPresent(entity::setProfesor);
+            }
+            if (dto.getFechaSesion() != null) entity.setFechaSesion(dto.getFechaSesion());
+            if (dto.getTemaTrabajado() != null) entity.setTemaTrabajado(dto.getTemaTrabajado());
+            if (dto.getComentariosPedagogicos() != null) entity.setComentariosPedagogicos(dto.getComentariosPedagogicos());
+            if (dto.getObjetivosCumplidos() != null) entity.setObjetivosCumplidos(dto.getObjetivosCumplidos());
+            if (dto.getProximaMeta() != null) entity.setProximaMeta(dto.getProximaMeta());
+            return toResponseDTO(repository.save(entity));
+        }).orElse(null);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    public BitacoraProgresoResponseDTO toResponseDTO(BitacoraProgreso entity) {
+        if (entity == null) return null;
+        BitacoraProgresoResponseDTO dto = new BitacoraProgresoResponseDTO();
+        dto.setIdBitacora(entity.getIdBitacora());
+        if (entity.getInscripcion() != null) {
+            dto.setInscripcion(serviceInscripcion.toResponseDTO(entity.getInscripcion()));
+        }
+        if (entity.getProfesor() != null) {
+            dto.setProfesor(serviceUsuario.toResponseDTO(entity.getProfesor()));
+        }
+        dto.setFechaSesion(entity.getFechaSesion());
+        dto.setTemaTrabajado(entity.getTemaTrabajado());
+        dto.setComentariosPedagogicos(entity.getComentariosPedagogicos());
+        dto.setObjetivosCumplidos(entity.getObjetivosCumplidos());
+        dto.setProximaMeta(entity.getProximaMeta());
+        return dto;
+    }
+
+    public BitacoraProgreso toEntity(BitacoraProgresoRequestDTO dto) {
+        if (dto == null) return null;
+        BitacoraProgreso entity = new BitacoraProgreso();
+        if (dto.getIdInscripcion() != null) {
+            repositoryInscripcion.findById(dto.getIdInscripcion()).ifPresent(entity::setInscripcion);
+        }
+        if (dto.getIdProfesor() != null) {
+            repositoryUsuario.findById(dto.getIdProfesor()).ifPresent(entity::setProfesor);
+        }
+        if (dto.getFechaSesion() != null) entity.setFechaSesion(dto.getFechaSesion());
+        if (dto.getTemaTrabajado() != null) entity.setTemaTrabajado(dto.getTemaTrabajado());
+        if (dto.getComentariosPedagogicos() != null) entity.setComentariosPedagogicos(dto.getComentariosPedagogicos());
+        if (dto.getObjetivosCumplidos() != null) entity.setObjetivosCumplidos(dto.getObjetivosCumplidos());
+        if (dto.getProximaMeta() != null) entity.setProximaMeta(dto.getProximaMeta());
+        return entity;
+    }
 }

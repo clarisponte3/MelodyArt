@@ -1,24 +1,101 @@
 package com.sonorasync.service;
 
-import com.sonorasync.dao.DaoVenta;
+import com.sonorasync.dto.request.VentaRequestDTO;
+import com.sonorasync.dto.response.VentaResponseDTO;
+import com.sonorasync.model.MetodoPago;
+import com.sonorasync.model.Usuario;
 import com.sonorasync.model.Venta;
+import com.sonorasync.repository.RepositoryMetodoPago;
+import com.sonorasync.repository.RepositoryUsuario;
 import com.sonorasync.repository.RepositoryVenta;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.sonorasync.service.ServiceMetodoPago;
+import com.sonorasync.service.ServiceUsuario;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ServiceVenta {
     @Autowired private RepositoryVenta repository;
-    public List<DaoVenta> findAll() { return repository.findAll().stream().map(this::toDao).collect(Collectors.toList()); }
-    public DaoVenta findById(Long id) { return repository.findById(id).map(this::toDao).orElse(null); }
-    public DaoVenta save(DaoVenta dao) { return toDao(repository.save(toEntity(dao))); }
-    public DaoVenta update(Long id, DaoVenta dao) {
-        if (repository.existsById(id)) { Venta entity = toEntity(dao); entity.setIdVenta(id); return toDao(repository.save(entity)); } return null;
+    @Autowired private RepositoryUsuario repositoryUsuario;
+    @Autowired private ServiceUsuario serviceUsuario;
+    @Autowired private RepositoryMetodoPago repositoryMetodoPago;
+    @Autowired private ServiceMetodoPago serviceMetodoPago;
+
+    public List<VentaResponseDTO> findAll() {
+        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
-    public void delete(Long id) { repository.deleteById(id); }
-    private DaoVenta toDao(Venta entity) { DaoVenta dao = new DaoVenta(); BeanUtils.copyProperties(entity, dao); return dao; }
-    private Venta toEntity(DaoVenta dao) { Venta entity = new Venta(); BeanUtils.copyProperties(dao, entity); return entity; }
+
+    public VentaResponseDTO findById(Long id) {
+        return repository.findById(id).map(this::toResponseDTO).orElse(null);
+    }
+
+    public VentaResponseDTO save(VentaRequestDTO dto) {
+        return toResponseDTO(repository.save(toEntity(dto)));
+    }
+
+    public VentaResponseDTO update(Long id, VentaRequestDTO dto) {
+        return repository.findById(id).map(entity -> {
+            if (dto.getFolio() != null) entity.setFolio(dto.getFolio());
+            if (dto.getFechaHora() != null) entity.setFechaHora(dto.getFechaHora());
+            if (dto.getIdUsuarioVendedor() != null) {
+                repositoryUsuario.findById(dto.getIdUsuarioVendedor()).ifPresent(entity::setVendedor);
+            }
+            if (dto.getIdUsuarioCliente() != null) {
+                repositoryUsuario.findById(dto.getIdUsuarioCliente()).ifPresent(entity::setCliente);
+            }
+            if (dto.getIdMetodoPago() != null) {
+                repositoryMetodoPago.findById(dto.getIdMetodoPago()).ifPresent(entity::setMetodoPago);
+            }
+            if (dto.getTasaIva() != null) entity.setTasaIva(dto.getTasaIva());
+            if (dto.getEstado() != null) entity.setEstado(dto.getEstado());
+            return toResponseDTO(repository.save(entity));
+        }).orElse(null);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    public VentaResponseDTO toResponseDTO(Venta entity) {
+        if (entity == null) return null;
+        VentaResponseDTO dto = new VentaResponseDTO();
+        dto.setIdVenta(entity.getIdVenta());
+        dto.setFolio(entity.getFolio());
+        dto.setFechaHora(entity.getFechaHora());
+        if (entity.getVendedor() != null) {
+            dto.setVendedor(serviceUsuario.toResponseDTO(entity.getVendedor()));
+        }
+        if (entity.getCliente() != null) {
+            dto.setCliente(serviceUsuario.toResponseDTO(entity.getCliente()));
+        }
+        if (entity.getMetodoPago() != null) {
+            dto.setMetodoPago(serviceMetodoPago.toResponseDTO(entity.getMetodoPago()));
+        }
+        dto.setTasaIva(entity.getTasaIva());
+        dto.setEstado(entity.getEstado());
+        return dto;
+    }
+
+    public Venta toEntity(VentaRequestDTO dto) {
+        if (dto == null) return null;
+        Venta entity = new Venta();
+        if (dto.getFolio() != null) entity.setFolio(dto.getFolio());
+        if (dto.getFechaHora() != null) entity.setFechaHora(dto.getFechaHora());
+        if (dto.getIdUsuarioVendedor() != null) {
+            repositoryUsuario.findById(dto.getIdUsuarioVendedor()).ifPresent(entity::setVendedor);
+        }
+        if (dto.getIdUsuarioCliente() != null) {
+            repositoryUsuario.findById(dto.getIdUsuarioCliente()).ifPresent(entity::setCliente);
+        }
+        if (dto.getIdMetodoPago() != null) {
+            repositoryMetodoPago.findById(dto.getIdMetodoPago()).ifPresent(entity::setMetodoPago);
+        }
+        if (dto.getTasaIva() != null) entity.setTasaIva(dto.getTasaIva());
+        if (dto.getEstado() != null) entity.setEstado(dto.getEstado());
+        return entity;
+    }
 }

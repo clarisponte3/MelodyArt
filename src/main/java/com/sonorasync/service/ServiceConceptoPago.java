@@ -1,24 +1,62 @@
 package com.sonorasync.service;
 
-import com.sonorasync.dao.DaoConceptoPago;
+import com.sonorasync.dto.request.ConceptoPagoRequestDTO;
+import com.sonorasync.dto.response.ConceptoPagoResponseDTO;
 import com.sonorasync.model.ConceptoPago;
 import com.sonorasync.repository.RepositoryConceptoPago;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ServiceConceptoPago {
     @Autowired private RepositoryConceptoPago repository;
-    public List<DaoConceptoPago> findAll() { return repository.findAll().stream().map(this::toDao).collect(Collectors.toList()); }
-    public DaoConceptoPago findById(Long id) { return repository.findById(id).map(this::toDao).orElse(null); }
-    public DaoConceptoPago save(DaoConceptoPago dao) { return toDao(repository.save(toEntity(dao))); }
-    public DaoConceptoPago update(Long id, DaoConceptoPago dao) {
-        if (repository.existsById(id)) { ConceptoPago entity = toEntity(dao); entity.setIdConceptoPago(id); return toDao(repository.save(entity)); } return null;
+
+    public List<ConceptoPagoResponseDTO> findAll() {
+        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
-    public void delete(Long id) { repository.deleteById(id); }
-    private DaoConceptoPago toDao(ConceptoPago entity) { DaoConceptoPago dao = new DaoConceptoPago(); BeanUtils.copyProperties(entity, dao); return dao; }
-    private ConceptoPago toEntity(DaoConceptoPago dao) { ConceptoPago entity = new ConceptoPago(); BeanUtils.copyProperties(dao, entity); return entity; }
+
+    public ConceptoPagoResponseDTO findById(Long id) {
+        return repository.findById(id).map(this::toResponseDTO).orElse(null);
+    }
+
+    public ConceptoPagoResponseDTO save(ConceptoPagoRequestDTO dto) {
+        return toResponseDTO(repository.save(toEntity(dto)));
+    }
+
+    public ConceptoPagoResponseDTO update(Long id, ConceptoPagoRequestDTO dto) {
+        return repository.findById(id).map(entity -> {
+            if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
+            if (dto.getTipo() != null) entity.setTipo(dto.getTipo());
+            if (dto.getActivo() != null) entity.setActivo(dto.getActivo());
+            return toResponseDTO(repository.save(entity));
+        }).orElse(null);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    public ConceptoPagoResponseDTO toResponseDTO(ConceptoPago entity) {
+        if (entity == null) return null;
+        ConceptoPagoResponseDTO dto = new ConceptoPagoResponseDTO();
+        dto.setIdConceptoPago(entity.getIdConceptoPago());
+        dto.setNombre(entity.getNombre());
+        dto.setDescripcion(entity.getDescripcion());
+        dto.setTipo(entity.getTipo());
+        dto.setActivo(entity.getActivo());
+        return dto;
+    }
+
+    public ConceptoPago toEntity(ConceptoPagoRequestDTO dto) {
+        if (dto == null) return null;
+        ConceptoPago entity = new ConceptoPago();
+        if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
+        if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
+        if (dto.getTipo() != null) entity.setTipo(dto.getTipo());
+        if (dto.getActivo() != null) entity.setActivo(dto.getActivo());
+        return entity;
+    }
 }

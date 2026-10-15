@@ -1,6 +1,7 @@
 package com.sonorasync.controller;
 
-import com.sonorasync.dao.DaoLogAuditoria;
+import com.sonorasync.dto.request.LogAuditoriaRequestDTO;
+import com.sonorasync.dto.response.LogAuditoriaResponseDTO;
 import com.sonorasync.service.ServiceLogAuditoria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,15 +12,32 @@ import java.util.List;
 @RequestMapping("/api/logs-auditoria")
 public class ControllerLogAuditoria {
     @Autowired private ServiceLogAuditoria service;
-    @GetMapping public List<DaoLogAuditoria> findAll() { return service.findAll(); }
-    @GetMapping("/{id}") public ResponseEntity<DaoLogAuditoria> findById(@PathVariable Long id) {
-        DaoLogAuditoria dao = service.findById(id);
-        return dao != null ? ResponseEntity.ok(dao) : ResponseEntity.notFound().build();
+
+    @GetMapping
+    public List<LogAuditoriaResponseDTO> findAll() {
+        return service.findAll();
     }
-    @PostMapping public ResponseEntity<DaoLogAuditoria> save(@RequestBody DaoLogAuditoria dao) { return ResponseEntity.ok(service.save(dao)); }
-    @PutMapping("/{id}") public ResponseEntity<DaoLogAuditoria> update(@PathVariable Long id, @RequestBody DaoLogAuditoria dao) {
-        DaoLogAuditoria updated = service.update(id, dao);
+
+    @GetMapping("/{id}")
+    public ResponseEntity<LogAuditoriaResponseDTO> findById(@PathVariable Long id) {
+        LogAuditoriaResponseDTO res = service.findById(id);
+        return res != null ? ResponseEntity.ok(res) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<LogAuditoriaResponseDTO> save(@RequestBody LogAuditoriaRequestDTO request) {
+        return ResponseEntity.ok(service.save(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<LogAuditoriaResponseDTO> update(@PathVariable Long id, @RequestBody LogAuditoriaRequestDTO request) {
+        LogAuditoriaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
-    @DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable Long id) { service.delete(id); return ResponseEntity.noContent().build(); }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

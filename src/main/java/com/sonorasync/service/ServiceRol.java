@@ -1,24 +1,59 @@
 package com.sonorasync.service;
 
-import com.sonorasync.dao.DaoRol;
+import com.sonorasync.dto.request.RolRequestDTO;
+import com.sonorasync.dto.response.RolResponseDTO;
 import com.sonorasync.model.Rol;
 import com.sonorasync.repository.RepositoryRol;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ServiceRol {
     @Autowired private RepositoryRol repository;
-    public List<DaoRol> findAll() { return repository.findAll().stream().map(this::toDao).collect(Collectors.toList()); }
-    public DaoRol findById(Long id) { return repository.findById(id).map(this::toDao).orElse(null); }
-    public DaoRol save(DaoRol dao) { return toDao(repository.save(toEntity(dao))); }
-    public DaoRol update(Long id, DaoRol dao) {
-        if (repository.existsById(id)) { Rol entity = toEntity(dao); entity.setIdRol(id); return toDao(repository.save(entity)); } return null;
+
+    public List<RolResponseDTO> findAll() {
+        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
-    public void delete(Long id) { repository.deleteById(id); }
-    private DaoRol toDao(Rol entity) { DaoRol dao = new DaoRol(); BeanUtils.copyProperties(entity, dao); return dao; }
-    private Rol toEntity(DaoRol dao) { Rol entity = new Rol(); BeanUtils.copyProperties(dao, entity); return entity; }
+
+    public RolResponseDTO findById(Long id) {
+        return repository.findById(id).map(this::toResponseDTO).orElse(null);
+    }
+
+    public RolResponseDTO save(RolRequestDTO dto) {
+        return toResponseDTO(repository.save(toEntity(dto)));
+    }
+
+    public RolResponseDTO update(Long id, RolRequestDTO dto) {
+        return repository.findById(id).map(entity -> {
+            if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
+            if (dto.getActivo() != null) entity.setActivo(dto.getActivo());
+            return toResponseDTO(repository.save(entity));
+        }).orElse(null);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    public RolResponseDTO toResponseDTO(Rol entity) {
+        if (entity == null) return null;
+        RolResponseDTO dto = new RolResponseDTO();
+        dto.setIdRol(entity.getIdRol());
+        dto.setNombre(entity.getNombre());
+        dto.setDescripcion(entity.getDescripcion());
+        dto.setActivo(entity.getActivo());
+        return dto;
+    }
+
+    public Rol toEntity(RolRequestDTO dto) {
+        if (dto == null) return null;
+        Rol entity = new Rol();
+        if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
+        if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
+        if (dto.getActivo() != null) entity.setActivo(dto.getActivo());
+        return entity;
+    }
 }

@@ -1,6 +1,7 @@
 package com.sonorasync.controller;
 
-import com.sonorasync.dao.DaoUsuarioRol;
+import com.sonorasync.dto.request.UsuarioRolRequestDTO;
+import com.sonorasync.dto.response.UsuarioRolResponseDTO;
 import com.sonorasync.model.UsuarioRol;
 import com.sonorasync.service.ServiceUsuarioRol;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,26 +14,26 @@ import java.util.List;
 public class ControllerUsuarioRol {
     @Autowired private ServiceUsuarioRol service;
 
-    @GetMapping 
-    public List<DaoUsuarioRol> findAll() { 
-        return service.findAll(); 
+    @GetMapping
+    public List<UsuarioRolResponseDTO> findAll() {
+        return service.findAll();
     }
 
-    @GetMapping("/{idUsuario}/{idRol}") 
-    public ResponseEntity<DaoUsuarioRol> findById(@PathVariable Long idUsuario, @PathVariable Long idRol) {
+    @GetMapping("/{idUsuario}/{idRol}")
+    public ResponseEntity<UsuarioRolResponseDTO> findById(@PathVariable Long idUsuario, @PathVariable Long idRol) {
         UsuarioRol.UsuarioRolId id = new UsuarioRol.UsuarioRolId();
         id.setIdUsuario(idUsuario);
         id.setIdRol(idRol);
-        DaoUsuarioRol dao = service.findById(id);
-        return dao != null ? ResponseEntity.ok(dao) : ResponseEntity.notFound().build();
+        UsuarioRolResponseDTO res = service.findById(id);
+        return res != null ? ResponseEntity.ok(res) : ResponseEntity.notFound().build();
     }
 
-    @PostMapping 
-    public ResponseEntity<DaoUsuarioRol> save(@RequestBody DaoUsuarioRol dao) { 
-        return ResponseEntity.ok(service.save(dao)); 
+    @PostMapping
+    public ResponseEntity<UsuarioRolResponseDTO> save(@RequestBody UsuarioRolRequestDTO request) {
+        return ResponseEntity.ok(service.save(request));
     }
 
-    @DeleteMapping("/{idUsuario}/{idRol}") 
+    @DeleteMapping("/{idUsuario}/{idRol}")
     public ResponseEntity<Void> delete(@PathVariable Long idUsuario, @PathVariable Long idRol) {
         UsuarioRol.UsuarioRolId id = new UsuarioRol.UsuarioRolId();
         id.setIdUsuario(idUsuario);
