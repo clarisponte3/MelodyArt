@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.ProveedorRequestDTO;
 import com.sonorasync.dto.response.ProveedorResponseDTO;
 import com.sonorasync.service.ServiceProveedor;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/proveedores")
+@RequiredArgsConstructor
 public class ControllerProveedor {
-    @Autowired private ServiceProveedor service;
+
+    private final ServiceProveedor service;
 
     @GetMapping
     public List<ProveedorResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerProveedor {
     }
 
     @PostMapping
-    public ResponseEntity<ProveedorResponseDTO> save(@RequestBody ProveedorRequestDTO request) {
+    public ResponseEntity<ProveedorResponseDTO> save(@Valid @RequestBody ProveedorRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProveedorResponseDTO> update(@PathVariable Long id, @RequestBody ProveedorRequestDTO request) {
+    public ResponseEntity<ProveedorResponseDTO> update(@PathVariable Long id, @Valid @RequestBody ProveedorRequestDTO request) {
         ProveedorResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

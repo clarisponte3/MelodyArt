@@ -2,40 +2,43 @@ package com.sonorasync.service;
 
 import com.sonorasync.dto.request.UsuarioRolRequestDTO;
 import com.sonorasync.dto.response.UsuarioRolResponseDTO;
-import com.sonorasync.model.Rol;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.model.UsuarioRol;
 import com.sonorasync.repository.RepositoryRol;
 import com.sonorasync.repository.RepositoryUsuario;
 import com.sonorasync.repository.RepositoryUsuarioRol;
-import com.sonorasync.service.ServiceRol;
-import com.sonorasync.service.ServiceUsuario;
-import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceUsuarioRol {
-    @Autowired private RepositoryUsuarioRol repository;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
-    @Autowired private RepositoryRol repositoryRol;
-    @Autowired private ServiceRol serviceRol;
 
+    private final RepositoryUsuarioRol repository;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+    private final RepositoryRol repositoryRol;
+    private final ServiceRol serviceRol;
+
+    @Transactional(readOnly = true)
     public List<UsuarioRolResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public UsuarioRolResponseDTO findById(UsuarioRol.UsuarioRolId id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public UsuarioRolResponseDTO save(UsuarioRolRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public void delete(UsuarioRol.UsuarioRolId id) {
         repository.deleteById(id);
     }

@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.BitacoraProgresoRequestDTO;
 import com.sonorasync.dto.response.BitacoraProgresoResponseDTO;
 import com.sonorasync.service.ServiceBitacoraProgreso;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/bitacoras")
+@RequiredArgsConstructor
 public class ControllerBitacoraProgreso {
-    @Autowired private ServiceBitacoraProgreso service;
+
+    private final ServiceBitacoraProgreso service;
 
     @GetMapping
     public List<BitacoraProgresoResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerBitacoraProgreso {
     }
 
     @PostMapping
-    public ResponseEntity<BitacoraProgresoResponseDTO> save(@RequestBody BitacoraProgresoRequestDTO request) {
+    public ResponseEntity<BitacoraProgresoResponseDTO> save(@Valid @RequestBody BitacoraProgresoRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BitacoraProgresoResponseDTO> update(@PathVariable Long id, @RequestBody BitacoraProgresoRequestDTO request) {
+    public ResponseEntity<BitacoraProgresoResponseDTO> update(@PathVariable Long id, @Valid @RequestBody BitacoraProgresoRequestDTO request) {
         BitacoraProgresoResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

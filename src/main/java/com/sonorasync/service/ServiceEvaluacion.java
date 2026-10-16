@@ -3,40 +3,42 @@ package com.sonorasync.service;
 import com.sonorasync.dto.request.EvaluacionRequestDTO;
 import com.sonorasync.dto.response.EvaluacionResponseDTO;
 import com.sonorasync.model.Evaluacion;
-import com.sonorasync.model.Inscripcion;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryEvaluacion;
 import com.sonorasync.repository.RepositoryInscripcion;
 import com.sonorasync.repository.RepositoryUsuario;
-import com.sonorasync.service.ServiceInscripcion;
-import com.sonorasync.service.ServiceUsuario;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceEvaluacion {
-    @Autowired private RepositoryEvaluacion repository;
-    @Autowired private RepositoryInscripcion repositoryInscripcion;
-    @Autowired private ServiceInscripcion serviceInscripcion;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
 
+    private final RepositoryEvaluacion repository;
+    private final RepositoryInscripcion repositoryInscripcion;
+    private final ServiceInscripcion serviceInscripcion;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+
+    @Transactional(readOnly = true)
     public List<EvaluacionResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public EvaluacionResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public EvaluacionResponseDTO save(EvaluacionRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public EvaluacionResponseDTO update(Long id, EvaluacionRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdInscripcion() != null) {
@@ -53,6 +55,7 @@ public class ServiceEvaluacion {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

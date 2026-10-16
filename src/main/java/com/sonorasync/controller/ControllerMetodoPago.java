@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.MetodoPagoRequestDTO;
 import com.sonorasync.dto.response.MetodoPagoResponseDTO;
 import com.sonorasync.service.ServiceMetodoPago;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/metodos-pago")
+@RequiredArgsConstructor
 public class ControllerMetodoPago {
-    @Autowired private ServiceMetodoPago service;
+
+    private final ServiceMetodoPago service;
 
     @GetMapping
     public List<MetodoPagoResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerMetodoPago {
     }
 
     @PostMapping
-    public ResponseEntity<MetodoPagoResponseDTO> save(@RequestBody MetodoPagoRequestDTO request) {
+    public ResponseEntity<MetodoPagoResponseDTO> save(@Valid @RequestBody MetodoPagoRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MetodoPagoResponseDTO> update(@PathVariable Long id, @RequestBody MetodoPagoRequestDTO request) {
+    public ResponseEntity<MetodoPagoResponseDTO> update(@PathVariable Long id, @Valid @RequestBody MetodoPagoRequestDTO request) {
         MetodoPagoResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

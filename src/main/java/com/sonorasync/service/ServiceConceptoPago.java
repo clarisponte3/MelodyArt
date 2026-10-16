@@ -4,27 +4,35 @@ import com.sonorasync.dto.request.ConceptoPagoRequestDTO;
 import com.sonorasync.dto.response.ConceptoPagoResponseDTO;
 import com.sonorasync.model.ConceptoPago;
 import com.sonorasync.repository.RepositoryConceptoPago;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceConceptoPago {
-    @Autowired private RepositoryConceptoPago repository;
 
+    private final RepositoryConceptoPago repository;
+
+    @Transactional(readOnly = true)
     public List<ConceptoPagoResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ConceptoPagoResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public ConceptoPagoResponseDTO save(ConceptoPagoRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public ConceptoPagoResponseDTO update(Long id, ConceptoPagoRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
@@ -35,6 +43,7 @@ public class ServiceConceptoPago {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

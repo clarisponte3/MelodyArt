@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.AulaRequestDTO;
 import com.sonorasync.dto.response.AulaResponseDTO;
 import com.sonorasync.service.ServiceAula;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/aulas")
+@RequiredArgsConstructor
 public class ControllerAula {
-    @Autowired private ServiceAula service;
+
+    private final ServiceAula service;
 
     @GetMapping
     public List<AulaResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerAula {
     }
 
     @PostMapping
-    public ResponseEntity<AulaResponseDTO> save(@RequestBody AulaRequestDTO request) {
+    public ResponseEntity<AulaResponseDTO> save(@Valid @RequestBody AulaRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AulaResponseDTO> update(@PathVariable Long id, @RequestBody AulaRequestDTO request) {
+    public ResponseEntity<AulaResponseDTO> update(@PathVariable Long id, @Valid @RequestBody AulaRequestDTO request) {
         AulaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

@@ -2,41 +2,43 @@ package com.sonorasync.service;
 
 import com.sonorasync.dto.request.VentaRequestDTO;
 import com.sonorasync.dto.response.VentaResponseDTO;
-import com.sonorasync.model.MetodoPago;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.model.Venta;
 import com.sonorasync.repository.RepositoryMetodoPago;
 import com.sonorasync.repository.RepositoryUsuario;
 import com.sonorasync.repository.RepositoryVenta;
-import com.sonorasync.service.ServiceMetodoPago;
-import com.sonorasync.service.ServiceUsuario;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceVenta {
-    @Autowired private RepositoryVenta repository;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
-    @Autowired private RepositoryMetodoPago repositoryMetodoPago;
-    @Autowired private ServiceMetodoPago serviceMetodoPago;
 
-    public List<VentaResponseDTO> findAll() {
-        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
+    private final RepositoryVenta repository;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+    private final RepositoryMetodoPago repositoryMetodoPago;
+    private final ServiceMetodoPago serviceMetodoPago;
+
+    @Transactional(readOnly = true)
+    public Page<VentaResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(this::toResponseDTO);
     }
 
+    @Transactional(readOnly = true)
     public VentaResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public VentaResponseDTO save(VentaRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public VentaResponseDTO update(Long id, VentaRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getFolio() != null) entity.setFolio(dto.getFolio());
@@ -56,6 +58,7 @@ public class ServiceVenta {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

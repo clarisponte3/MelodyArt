@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.PermisoRequestDTO;
 import com.sonorasync.dto.response.PermisoResponseDTO;
 import com.sonorasync.service.ServicePermiso;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/permisos")
+@RequiredArgsConstructor
 public class ControllerPermiso {
-    @Autowired private ServicePermiso service;
+
+    private final ServicePermiso service;
 
     @GetMapping
     public List<PermisoResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerPermiso {
     }
 
     @PostMapping
-    public ResponseEntity<PermisoResponseDTO> save(@RequestBody PermisoRequestDTO request) {
+    public ResponseEntity<PermisoResponseDTO> save(@Valid @RequestBody PermisoRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PermisoResponseDTO> update(@PathVariable Long id, @RequestBody PermisoRequestDTO request) {
+    public ResponseEntity<PermisoResponseDTO> update(@PathVariable Long id, @Valid @RequestBody PermisoRequestDTO request) {
         PermisoResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

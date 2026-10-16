@@ -3,37 +3,41 @@ package com.sonorasync.service;
 import com.sonorasync.dto.request.DetalleVentaRequestDTO;
 import com.sonorasync.dto.response.DetalleVentaResponseDTO;
 import com.sonorasync.model.DetalleVenta;
-import com.sonorasync.model.Producto;
-import com.sonorasync.model.Venta;
 import com.sonorasync.repository.RepositoryDetalleVenta;
 import com.sonorasync.repository.RepositoryProducto;
 import com.sonorasync.repository.RepositoryVenta;
-import com.sonorasync.service.ServiceProducto;
-import java.math.BigDecimal;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceDetalleVenta {
-    @Autowired private RepositoryDetalleVenta repository;
-    @Autowired private RepositoryVenta repositoryVenta;
-    @Autowired private RepositoryProducto repositoryProducto;
-    @Autowired private ServiceProducto serviceProducto;
 
+    private final RepositoryDetalleVenta repository;
+    private final RepositoryVenta repositoryVenta;
+    private final RepositoryProducto repositoryProducto;
+    private final ServiceProducto serviceProducto;
+
+    @Transactional(readOnly = true)
     public List<DetalleVentaResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public DetalleVentaResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public DetalleVentaResponseDTO save(DetalleVentaRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public DetalleVentaResponseDTO update(Long id, DetalleVentaRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdVenta() != null) {
@@ -48,6 +52,7 @@ public class ServiceDetalleVenta {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

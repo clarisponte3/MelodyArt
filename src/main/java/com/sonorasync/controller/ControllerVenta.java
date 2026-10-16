@@ -3,19 +3,25 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.VentaRequestDTO;
 import com.sonorasync.dto.response.VentaResponseDTO;
 import com.sonorasync.service.ServiceVenta;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/ventas")
+@RequiredArgsConstructor
 public class ControllerVenta {
-    @Autowired private ServiceVenta service;
+
+    private final ServiceVenta service;
 
     @GetMapping
-    public List<VentaResponseDTO> findAll() {
-        return service.findAll();
+    public Page<VentaResponseDTO> findAll(
+            @PageableDefault(size = 20) Pageable pageable) {
+        return service.findAll(pageable);
     }
 
     @GetMapping("/{id}")
@@ -25,12 +31,12 @@ public class ControllerVenta {
     }
 
     @PostMapping
-    public ResponseEntity<VentaResponseDTO> save(@RequestBody VentaRequestDTO request) {
+    public ResponseEntity<VentaResponseDTO> save(@Valid @RequestBody VentaRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<VentaResponseDTO> update(@PathVariable Long id, @RequestBody VentaRequestDTO request) {
+    public ResponseEntity<VentaResponseDTO> update(@PathVariable Long id, @Valid @RequestBody VentaRequestDTO request) {
         VentaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

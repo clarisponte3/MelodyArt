@@ -3,39 +3,42 @@ package com.sonorasync.service;
 import com.sonorasync.dto.request.BitacoraProgresoRequestDTO;
 import com.sonorasync.dto.response.BitacoraProgresoResponseDTO;
 import com.sonorasync.model.BitacoraProgreso;
-import com.sonorasync.model.Inscripcion;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryBitacoraProgreso;
 import com.sonorasync.repository.RepositoryInscripcion;
 import com.sonorasync.repository.RepositoryUsuario;
-import com.sonorasync.service.ServiceInscripcion;
-import com.sonorasync.service.ServiceUsuario;
-import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceBitacoraProgreso {
-    @Autowired private RepositoryBitacoraProgreso repository;
-    @Autowired private RepositoryInscripcion repositoryInscripcion;
-    @Autowired private ServiceInscripcion serviceInscripcion;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
 
+    private final RepositoryBitacoraProgreso repository;
+    private final RepositoryInscripcion repositoryInscripcion;
+    private final ServiceInscripcion serviceInscripcion;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+
+    @Transactional(readOnly = true)
     public List<BitacoraProgresoResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public BitacoraProgresoResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public BitacoraProgresoResponseDTO save(BitacoraProgresoRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public BitacoraProgresoResponseDTO update(Long id, BitacoraProgresoRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdInscripcion() != null) {
@@ -53,6 +56,7 @@ public class ServiceBitacoraProgreso {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

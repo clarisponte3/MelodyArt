@@ -3,19 +3,25 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.AsistenciaClaseRequestDTO;
 import com.sonorasync.dto.response.AsistenciaClaseResponseDTO;
 import com.sonorasync.service.ServiceAsistenciaClase;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/asistencias")
+@RequiredArgsConstructor
 public class ControllerAsistenciaClase {
-    @Autowired private ServiceAsistenciaClase service;
+
+    private final ServiceAsistenciaClase service;
 
     @GetMapping
-    public List<AsistenciaClaseResponseDTO> findAll() {
-        return service.findAll();
+    public Page<AsistenciaClaseResponseDTO> findAll(
+            @PageableDefault(size = 20) Pageable pageable) {
+        return service.findAll(pageable);
     }
 
     @GetMapping("/{id}")
@@ -25,12 +31,12 @@ public class ControllerAsistenciaClase {
     }
 
     @PostMapping
-    public ResponseEntity<AsistenciaClaseResponseDTO> save(@RequestBody AsistenciaClaseRequestDTO request) {
+    public ResponseEntity<AsistenciaClaseResponseDTO> save(@Valid @RequestBody AsistenciaClaseRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AsistenciaClaseResponseDTO> update(@PathVariable Long id, @RequestBody AsistenciaClaseRequestDTO request) {
+    public ResponseEntity<AsistenciaClaseResponseDTO> update(@PathVariable Long id, @Valid @RequestBody AsistenciaClaseRequestDTO request) {
         AsistenciaClaseResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

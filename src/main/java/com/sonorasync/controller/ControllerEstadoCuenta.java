@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.EstadoCuentaRequestDTO;
 import com.sonorasync.dto.response.EstadoCuentaResponseDTO;
 import com.sonorasync.service.ServiceEstadoCuenta;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/estados-cuenta")
+@RequiredArgsConstructor
 public class ControllerEstadoCuenta {
-    @Autowired private ServiceEstadoCuenta service;
+
+    private final ServiceEstadoCuenta service;
 
     @GetMapping
     public List<EstadoCuentaResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerEstadoCuenta {
     }
 
     @PostMapping
-    public ResponseEntity<EstadoCuentaResponseDTO> save(@RequestBody EstadoCuentaRequestDTO request) {
+    public ResponseEntity<EstadoCuentaResponseDTO> save(@Valid @RequestBody EstadoCuentaRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EstadoCuentaResponseDTO> update(@PathVariable Long id, @RequestBody EstadoCuentaRequestDTO request) {
+    public ResponseEntity<EstadoCuentaResponseDTO> update(@PathVariable Long id, @Valid @RequestBody EstadoCuentaRequestDTO request) {
         EstadoCuentaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

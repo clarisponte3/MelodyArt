@@ -3,39 +3,42 @@ package com.sonorasync.service;
 import com.sonorasync.dto.request.MovimientoInventarioRequestDTO;
 import com.sonorasync.dto.response.MovimientoInventarioResponseDTO;
 import com.sonorasync.model.MovimientoInventario;
-import com.sonorasync.model.Producto;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryMovimientoInventario;
 import com.sonorasync.repository.RepositoryProducto;
 import com.sonorasync.repository.RepositoryUsuario;
-import com.sonorasync.service.ServiceProducto;
-import com.sonorasync.service.ServiceUsuario;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceMovimientoInventario {
-    @Autowired private RepositoryMovimientoInventario repository;
-    @Autowired private RepositoryProducto repositoryProducto;
-    @Autowired private ServiceProducto serviceProducto;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
 
-    public List<MovimientoInventarioResponseDTO> findAll() {
-        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
+    private final RepositoryMovimientoInventario repository;
+    private final RepositoryProducto repositoryProducto;
+    private final ServiceProducto serviceProducto;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+
+    @Transactional(readOnly = true)
+    public Page<MovimientoInventarioResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(this::toResponseDTO);
     }
 
+    @Transactional(readOnly = true)
     public MovimientoInventarioResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public MovimientoInventarioResponseDTO save(MovimientoInventarioRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public MovimientoInventarioResponseDTO update(Long id, MovimientoInventarioRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdProducto() != null) {
@@ -53,6 +56,7 @@ public class ServiceMovimientoInventario {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

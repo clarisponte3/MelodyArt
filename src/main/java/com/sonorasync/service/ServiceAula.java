@@ -4,27 +4,35 @@ import com.sonorasync.dto.request.AulaRequestDTO;
 import com.sonorasync.dto.response.AulaResponseDTO;
 import com.sonorasync.model.Aula;
 import com.sonorasync.repository.RepositoryAula;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceAula {
-    @Autowired private RepositoryAula repository;
 
+    private final RepositoryAula repository;
+
+    @Transactional(readOnly = true)
     public List<AulaResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public AulaResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public AulaResponseDTO save(AulaRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public AulaResponseDTO update(Long id, AulaRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
@@ -35,6 +43,7 @@ public class ServiceAula {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

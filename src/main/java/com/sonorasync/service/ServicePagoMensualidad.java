@@ -2,46 +2,46 @@ package com.sonorasync.service;
 
 import com.sonorasync.dto.request.PagoMensualidadRequestDTO;
 import com.sonorasync.dto.response.PagoMensualidadResponseDTO;
-import com.sonorasync.model.EstadoCuenta;
-import com.sonorasync.model.MetodoPago;
 import com.sonorasync.model.PagoMensualidad;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryEstadoCuenta;
 import com.sonorasync.repository.RepositoryMetodoPago;
 import com.sonorasync.repository.RepositoryPagoMensualidad;
 import com.sonorasync.repository.RepositoryUsuario;
-import com.sonorasync.service.ServiceEstadoCuenta;
-import com.sonorasync.service.ServiceMetodoPago;
-import com.sonorasync.service.ServiceUsuario;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServicePagoMensualidad {
-    @Autowired private RepositoryPagoMensualidad repository;
-    @Autowired private RepositoryEstadoCuenta repositoryEstadoCuenta;
-    @Autowired private ServiceEstadoCuenta serviceEstadoCuenta;
-    @Autowired private RepositoryMetodoPago repositoryMetodoPago;
-    @Autowired private ServiceMetodoPago serviceMetodoPago;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
 
+    private final RepositoryPagoMensualidad repository;
+    private final RepositoryEstadoCuenta repositoryEstadoCuenta;
+    private final ServiceEstadoCuenta serviceEstadoCuenta;
+    private final RepositoryMetodoPago repositoryMetodoPago;
+    private final ServiceMetodoPago serviceMetodoPago;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+
+    @Transactional(readOnly = true)
     public List<PagoMensualidadResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public PagoMensualidadResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public PagoMensualidadResponseDTO save(PagoMensualidadRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public PagoMensualidadResponseDTO update(Long id, PagoMensualidadRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdEstadoCuenta() != null) {
@@ -61,6 +61,7 @@ public class ServicePagoMensualidad {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

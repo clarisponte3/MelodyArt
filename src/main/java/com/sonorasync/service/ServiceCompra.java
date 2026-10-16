@@ -3,40 +3,42 @@ package com.sonorasync.service;
 import com.sonorasync.dto.request.CompraRequestDTO;
 import com.sonorasync.dto.response.CompraResponseDTO;
 import com.sonorasync.model.Compra;
-import com.sonorasync.model.Proveedor;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryCompra;
 import com.sonorasync.repository.RepositoryProveedor;
 import com.sonorasync.repository.RepositoryUsuario;
-import com.sonorasync.service.ServiceProveedor;
-import com.sonorasync.service.ServiceUsuario;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceCompra {
-    @Autowired private RepositoryCompra repository;
-    @Autowired private RepositoryProveedor repositoryProveedor;
-    @Autowired private ServiceProveedor serviceProveedor;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
 
+    private final RepositoryCompra repository;
+    private final RepositoryProveedor repositoryProveedor;
+    private final ServiceProveedor serviceProveedor;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+
+    @Transactional(readOnly = true)
     public List<CompraResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public CompraResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public CompraResponseDTO save(CompraRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public CompraResponseDTO update(Long id, CompraRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getFolio() != null) entity.setFolio(dto.getFolio());
@@ -53,6 +55,7 @@ public class ServiceCompra {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

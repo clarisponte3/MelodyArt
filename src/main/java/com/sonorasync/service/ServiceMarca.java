@@ -4,27 +4,35 @@ import com.sonorasync.dto.request.MarcaRequestDTO;
 import com.sonorasync.dto.response.MarcaResponseDTO;
 import com.sonorasync.model.Marca;
 import com.sonorasync.repository.RepositoryMarca;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceMarca {
-    @Autowired private RepositoryMarca repository;
 
+    private final RepositoryMarca repository;
+
+    @Transactional(readOnly = true)
     public List<MarcaResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public MarcaResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public MarcaResponseDTO save(MarcaRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public MarcaResponseDTO update(Long id, MarcaRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
@@ -34,6 +42,7 @@ public class ServiceMarca {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

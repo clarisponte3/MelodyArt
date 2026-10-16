@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.EvaluacionRequestDTO;
 import com.sonorasync.dto.response.EvaluacionResponseDTO;
 import com.sonorasync.service.ServiceEvaluacion;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/evaluaciones")
+@RequiredArgsConstructor
 public class ControllerEvaluacion {
-    @Autowired private ServiceEvaluacion service;
+
+    private final ServiceEvaluacion service;
 
     @GetMapping
     public List<EvaluacionResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerEvaluacion {
     }
 
     @PostMapping
-    public ResponseEntity<EvaluacionResponseDTO> save(@RequestBody EvaluacionRequestDTO request) {
+    public ResponseEntity<EvaluacionResponseDTO> save(@Valid @RequestBody EvaluacionRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EvaluacionResponseDTO> update(@PathVariable Long id, @RequestBody EvaluacionRequestDTO request) {
+    public ResponseEntity<EvaluacionResponseDTO> update(@PathVariable Long id, @Valid @RequestBody EvaluacionRequestDTO request) {
         EvaluacionResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

@@ -2,41 +2,43 @@ package com.sonorasync.service;
 
 import com.sonorasync.dto.request.EstadoCuentaRequestDTO;
 import com.sonorasync.dto.response.EstadoCuentaResponseDTO;
-import com.sonorasync.model.ConceptoPago;
 import com.sonorasync.model.EstadoCuenta;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryConceptoPago;
 import com.sonorasync.repository.RepositoryEstadoCuenta;
 import com.sonorasync.repository.RepositoryUsuario;
-import com.sonorasync.service.ServiceConceptoPago;
-import com.sonorasync.service.ServiceUsuario;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceEstadoCuenta {
-    @Autowired private RepositoryEstadoCuenta repository;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
-    @Autowired private RepositoryConceptoPago repositoryConceptoPago;
-    @Autowired private ServiceConceptoPago serviceConceptoPago;
 
+    private final RepositoryEstadoCuenta repository;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+    private final RepositoryConceptoPago repositoryConceptoPago;
+    private final ServiceConceptoPago serviceConceptoPago;
+
+    @Transactional(readOnly = true)
     public List<EstadoCuentaResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public EstadoCuentaResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public EstadoCuentaResponseDTO save(EstadoCuentaRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public EstadoCuentaResponseDTO update(Long id, EstadoCuentaRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdUsuarioAlumno() != null) {
@@ -54,6 +56,7 @@ public class ServiceEstadoCuenta {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

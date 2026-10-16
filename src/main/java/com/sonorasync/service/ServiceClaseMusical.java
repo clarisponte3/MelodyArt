@@ -4,27 +4,35 @@ import com.sonorasync.dto.request.ClaseMusicalRequestDTO;
 import com.sonorasync.dto.response.ClaseMusicalResponseDTO;
 import com.sonorasync.model.ClaseMusical;
 import com.sonorasync.repository.RepositoryClaseMusical;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceClaseMusical {
-    @Autowired private RepositoryClaseMusical repository;
 
+    private final RepositoryClaseMusical repository;
+
+    @Transactional(readOnly = true)
     public List<ClaseMusicalResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ClaseMusicalResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public ClaseMusicalResponseDTO save(ClaseMusicalRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public ClaseMusicalResponseDTO update(Long id, ClaseMusicalRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
@@ -36,6 +44,7 @@ public class ServiceClaseMusical {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

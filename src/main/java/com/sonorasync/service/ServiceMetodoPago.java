@@ -4,27 +4,35 @@ import com.sonorasync.dto.request.MetodoPagoRequestDTO;
 import com.sonorasync.dto.response.MetodoPagoResponseDTO;
 import com.sonorasync.model.MetodoPago;
 import com.sonorasync.repository.RepositoryMetodoPago;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceMetodoPago {
-    @Autowired private RepositoryMetodoPago repository;
 
+    private final RepositoryMetodoPago repository;
+
+    @Transactional(readOnly = true)
     public List<MetodoPagoResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public MetodoPagoResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public MetodoPagoResponseDTO save(MetodoPagoRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public MetodoPagoResponseDTO update(Long id, MetodoPagoRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
@@ -34,6 +42,7 @@ public class ServiceMetodoPago {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

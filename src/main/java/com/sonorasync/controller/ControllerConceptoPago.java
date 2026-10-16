@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.ConceptoPagoRequestDTO;
 import com.sonorasync.dto.response.ConceptoPagoResponseDTO;
 import com.sonorasync.service.ServiceConceptoPago;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/conceptos-pago")
+@RequiredArgsConstructor
 public class ControllerConceptoPago {
-    @Autowired private ServiceConceptoPago service;
+
+    private final ServiceConceptoPago service;
 
     @GetMapping
     public List<ConceptoPagoResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerConceptoPago {
     }
 
     @PostMapping
-    public ResponseEntity<ConceptoPagoResponseDTO> save(@RequestBody ConceptoPagoRequestDTO request) {
+    public ResponseEntity<ConceptoPagoResponseDTO> save(@Valid @RequestBody ConceptoPagoRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ConceptoPagoResponseDTO> update(@PathVariable Long id, @RequestBody ConceptoPagoRequestDTO request) {
+    public ResponseEntity<ConceptoPagoResponseDTO> update(@PathVariable Long id, @Valid @RequestBody ConceptoPagoRequestDTO request) {
         ConceptoPagoResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

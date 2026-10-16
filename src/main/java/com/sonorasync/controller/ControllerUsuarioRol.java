@@ -4,15 +4,19 @@ import com.sonorasync.dto.request.UsuarioRolRequestDTO;
 import com.sonorasync.dto.response.UsuarioRolResponseDTO;
 import com.sonorasync.model.UsuarioRol;
 import com.sonorasync.service.ServiceUsuarioRol;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios-roles")
+@RequiredArgsConstructor
 public class ControllerUsuarioRol {
-    @Autowired private ServiceUsuarioRol service;
+
+    private final ServiceUsuarioRol service;
 
     @GetMapping
     public List<UsuarioRolResponseDTO> findAll() {
@@ -29,7 +33,7 @@ public class ControllerUsuarioRol {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioRolResponseDTO> save(@RequestBody UsuarioRolRequestDTO request) {
+    public ResponseEntity<UsuarioRolResponseDTO> save(@Valid @RequestBody UsuarioRolRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 

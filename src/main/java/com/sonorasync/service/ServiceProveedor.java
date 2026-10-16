@@ -4,27 +4,35 @@ import com.sonorasync.dto.request.ProveedorRequestDTO;
 import com.sonorasync.dto.response.ProveedorResponseDTO;
 import com.sonorasync.model.Proveedor;
 import com.sonorasync.repository.RepositoryProveedor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceProveedor {
-    @Autowired private RepositoryProveedor repository;
 
+    private final RepositoryProveedor repository;
+
+    @Transactional(readOnly = true)
     public List<ProveedorResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ProveedorResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public ProveedorResponseDTO save(ProveedorRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public ProveedorResponseDTO update(Long id, ProveedorRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getEmpresa() != null) entity.setEmpresa(dto.getEmpresa());
@@ -38,6 +46,7 @@ public class ServiceProveedor {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

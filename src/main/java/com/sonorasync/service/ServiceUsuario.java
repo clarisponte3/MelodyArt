@@ -4,29 +4,36 @@ import com.sonorasync.dto.request.UsuarioRequestDTO;
 import com.sonorasync.dto.response.UsuarioResponseDTO;
 import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryUsuario;
-import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceUsuario {
-    @Autowired private RepositoryUsuario repository;
 
+    private final RepositoryUsuario repository;
+
+    @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public UsuarioResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public UsuarioResponseDTO save(UsuarioRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public UsuarioResponseDTO update(Long id, UsuarioRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
@@ -45,6 +52,7 @@ public class ServiceUsuario {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

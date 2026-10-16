@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.CategoriaRequestDTO;
 import com.sonorasync.dto.response.CategoriaResponseDTO;
 import com.sonorasync.service.ServiceCategoria;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/categorias")
+@RequiredArgsConstructor
 public class ControllerCategoria {
-    @Autowired private ServiceCategoria service;
+
+    private final ServiceCategoria service;
 
     @GetMapping
     public List<CategoriaResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerCategoria {
     }
 
     @PostMapping
-    public ResponseEntity<CategoriaResponseDTO> save(@RequestBody CategoriaRequestDTO request) {
+    public ResponseEntity<CategoriaResponseDTO> save(@Valid @RequestBody CategoriaRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoriaResponseDTO> update(@PathVariable Long id, @RequestBody CategoriaRequestDTO request) {
+    public ResponseEntity<CategoriaResponseDTO> update(@PathVariable Long id, @Valid @RequestBody CategoriaRequestDTO request) {
         CategoriaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

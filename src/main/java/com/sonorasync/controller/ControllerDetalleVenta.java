@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.DetalleVentaRequestDTO;
 import com.sonorasync.dto.response.DetalleVentaResponseDTO;
 import com.sonorasync.service.ServiceDetalleVenta;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/detalles-venta")
+@RequiredArgsConstructor
 public class ControllerDetalleVenta {
-    @Autowired private ServiceDetalleVenta service;
+
+    private final ServiceDetalleVenta service;
 
     @GetMapping
     public List<DetalleVentaResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerDetalleVenta {
     }
 
     @PostMapping
-    public ResponseEntity<DetalleVentaResponseDTO> save(@RequestBody DetalleVentaRequestDTO request) {
+    public ResponseEntity<DetalleVentaResponseDTO> save(@Valid @RequestBody DetalleVentaRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DetalleVentaResponseDTO> update(@PathVariable Long id, @RequestBody DetalleVentaRequestDTO request) {
+    public ResponseEntity<DetalleVentaResponseDTO> update(@PathVariable Long id, @Valid @RequestBody DetalleVentaRequestDTO request) {
         DetalleVentaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

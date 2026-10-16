@@ -2,39 +2,43 @@ package com.sonorasync.service;
 
 import com.sonorasync.dto.request.RolPermisoRequestDTO;
 import com.sonorasync.dto.response.RolPermisoResponseDTO;
-import com.sonorasync.model.Permiso;
-import com.sonorasync.model.Rol;
 import com.sonorasync.model.RolPermiso;
 import com.sonorasync.repository.RepositoryPermiso;
 import com.sonorasync.repository.RepositoryRol;
 import com.sonorasync.repository.RepositoryRolPermiso;
-import com.sonorasync.service.ServicePermiso;
-import com.sonorasync.service.ServiceRol;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceRolPermiso {
-    @Autowired private RepositoryRolPermiso repository;
-    @Autowired private RepositoryRol repositoryRol;
-    @Autowired private ServiceRol serviceRol;
-    @Autowired private RepositoryPermiso repositoryPermiso;
-    @Autowired private ServicePermiso servicePermiso;
 
+    private final RepositoryRolPermiso repository;
+    private final RepositoryRol repositoryRol;
+    private final ServiceRol serviceRol;
+    private final RepositoryPermiso repositoryPermiso;
+    private final ServicePermiso servicePermiso;
+
+    @Transactional(readOnly = true)
     public List<RolPermisoResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public RolPermisoResponseDTO findById(RolPermiso.RolPermisoId id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public RolPermisoResponseDTO save(RolPermisoRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public void delete(RolPermiso.RolPermisoId id) {
         repository.deleteById(id);
     }

@@ -4,15 +4,19 @@ import com.sonorasync.dto.request.RolPermisoRequestDTO;
 import com.sonorasync.dto.response.RolPermisoResponseDTO;
 import com.sonorasync.model.RolPermiso;
 import com.sonorasync.service.ServiceRolPermiso;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/roles-permisos")
+@RequiredArgsConstructor
 public class ControllerRolPermiso {
-    @Autowired private ServiceRolPermiso service;
+
+    private final ServiceRolPermiso service;
 
     @GetMapping
     public List<RolPermisoResponseDTO> findAll() {
@@ -29,7 +33,7 @@ public class ControllerRolPermiso {
     }
 
     @PostMapping
-    public ResponseEntity<RolPermisoResponseDTO> save(@RequestBody RolPermisoRequestDTO request) {
+    public ResponseEntity<RolPermisoResponseDTO> save(@Valid @RequestBody RolPermisoRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 

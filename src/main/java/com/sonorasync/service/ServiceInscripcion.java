@@ -2,41 +2,43 @@ package com.sonorasync.service;
 
 import com.sonorasync.dto.request.InscripcionRequestDTO;
 import com.sonorasync.dto.response.InscripcionResponseDTO;
-import com.sonorasync.model.ClaseMusical;
 import com.sonorasync.model.Inscripcion;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryClaseMusical;
 import com.sonorasync.repository.RepositoryInscripcion;
 import com.sonorasync.repository.RepositoryUsuario;
-import com.sonorasync.service.ServiceClaseMusical;
-import com.sonorasync.service.ServiceUsuario;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceInscripcion {
-    @Autowired private RepositoryInscripcion repository;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
-    @Autowired private RepositoryClaseMusical repositoryClaseMusical;
-    @Autowired private ServiceClaseMusical serviceClaseMusical;
 
+    private final RepositoryInscripcion repository;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+    private final RepositoryClaseMusical repositoryClaseMusical;
+    private final ServiceClaseMusical serviceClaseMusical;
+
+    @Transactional(readOnly = true)
     public List<InscripcionResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public InscripcionResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public InscripcionResponseDTO save(InscripcionRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public InscripcionResponseDTO update(Long id, InscripcionRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdUsuarioAlumno() != null) {
@@ -53,6 +55,7 @@ public class ServiceInscripcion {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

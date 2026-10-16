@@ -3,35 +3,39 @@ package com.sonorasync.service;
 import com.sonorasync.dto.request.AsistenciaClaseRequestDTO;
 import com.sonorasync.dto.response.AsistenciaClaseResponseDTO;
 import com.sonorasync.model.AsistenciaClase;
-import com.sonorasync.model.Inscripcion;
 import com.sonorasync.repository.RepositoryAsistenciaClase;
 import com.sonorasync.repository.RepositoryInscripcion;
-import com.sonorasync.service.ServiceInscripcion;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceAsistenciaClase {
-    @Autowired private RepositoryAsistenciaClase repository;
-    @Autowired private RepositoryInscripcion repositoryInscripcion;
-    @Autowired private ServiceInscripcion serviceInscripcion;
 
-    public List<AsistenciaClaseResponseDTO> findAll() {
-        return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
+    private final RepositoryAsistenciaClase repository;
+    private final RepositoryInscripcion repositoryInscripcion;
+    private final ServiceInscripcion serviceInscripcion;
+
+    @Transactional(readOnly = true)
+    public Page<AsistenciaClaseResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(this::toResponseDTO);
     }
 
+    @Transactional(readOnly = true)
     public AsistenciaClaseResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public AsistenciaClaseResponseDTO save(AsistenciaClaseRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public AsistenciaClaseResponseDTO update(Long id, AsistenciaClaseRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdInscripcion() != null) {
@@ -44,6 +48,7 @@ public class ServiceAsistenciaClase {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

@@ -3,34 +3,39 @@ package com.sonorasync.service;
 import com.sonorasync.dto.request.LogAuditoriaRequestDTO;
 import com.sonorasync.dto.response.LogAuditoriaResponseDTO;
 import com.sonorasync.model.LogAuditoria;
-import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryLogAuditoria;
 import com.sonorasync.repository.RepositoryUsuario;
-import com.sonorasync.service.ServiceUsuario;
-import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceLogAuditoria {
-    @Autowired private RepositoryLogAuditoria repository;
-    @Autowired private RepositoryUsuario repositoryUsuario;
-    @Autowired private ServiceUsuario serviceUsuario;
 
+    private final RepositoryLogAuditoria repository;
+    private final RepositoryUsuario repositoryUsuario;
+    private final ServiceUsuario serviceUsuario;
+
+    @Transactional(readOnly = true)
     public List<LogAuditoriaResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public LogAuditoriaResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public LogAuditoriaResponseDTO save(LogAuditoriaRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public LogAuditoriaResponseDTO update(Long id, LogAuditoriaRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getIdUsuario() != null) {
@@ -49,6 +54,7 @@ public class ServiceLogAuditoria {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

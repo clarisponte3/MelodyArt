@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.RolRequestDTO;
 import com.sonorasync.dto.response.RolResponseDTO;
 import com.sonorasync.service.ServiceRol;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/roles")
+@RequiredArgsConstructor
 public class ControllerRol {
-    @Autowired private ServiceRol service;
+
+    private final ServiceRol service;
 
     @GetMapping
     public List<RolResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerRol {
     }
 
     @PostMapping
-    public ResponseEntity<RolResponseDTO> save(@RequestBody RolRequestDTO request) {
+    public ResponseEntity<RolResponseDTO> save(@Valid @RequestBody RolRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RolResponseDTO> update(@PathVariable Long id, @RequestBody RolRequestDTO request) {
+    public ResponseEntity<RolResponseDTO> update(@PathVariable Long id, @Valid @RequestBody RolRequestDTO request) {
         RolResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

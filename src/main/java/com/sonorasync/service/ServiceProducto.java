@@ -2,40 +2,43 @@ package com.sonorasync.service;
 
 import com.sonorasync.dto.request.ProductoRequestDTO;
 import com.sonorasync.dto.response.ProductoResponseDTO;
-import com.sonorasync.model.Categoria;
-import com.sonorasync.model.Marca;
 import com.sonorasync.model.Producto;
 import com.sonorasync.repository.RepositoryCategoria;
 import com.sonorasync.repository.RepositoryMarca;
 import com.sonorasync.repository.RepositoryProducto;
-import com.sonorasync.service.ServiceCategoria;
-import com.sonorasync.service.ServiceMarca;
-import java.math.BigDecimal;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceProducto {
-    @Autowired private RepositoryProducto repository;
-    @Autowired private RepositoryCategoria repositoryCategoria;
-    @Autowired private ServiceCategoria serviceCategoria;
-    @Autowired private RepositoryMarca repositoryMarca;
-    @Autowired private ServiceMarca serviceMarca;
 
+    private final RepositoryProducto repository;
+    private final RepositoryCategoria repositoryCategoria;
+    private final ServiceCategoria serviceCategoria;
+    private final RepositoryMarca repositoryMarca;
+    private final ServiceMarca serviceMarca;
+
+    @Transactional(readOnly = true)
     public List<ProductoResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ProductoResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public ProductoResponseDTO save(ProductoRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public ProductoResponseDTO update(Long id, ProductoRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getSku() != null) entity.setSku(dto.getSku());
@@ -57,6 +60,7 @@ public class ServiceProducto {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.InscripcionRequestDTO;
 import com.sonorasync.dto.response.InscripcionResponseDTO;
 import com.sonorasync.service.ServiceInscripcion;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/inscripciones")
+@RequiredArgsConstructor
 public class ControllerInscripcion {
-    @Autowired private ServiceInscripcion service;
+
+    private final ServiceInscripcion service;
 
     @GetMapping
     public List<InscripcionResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerInscripcion {
     }
 
     @PostMapping
-    public ResponseEntity<InscripcionResponseDTO> save(@RequestBody InscripcionRequestDTO request) {
+    public ResponseEntity<InscripcionResponseDTO> save(@Valid @RequestBody InscripcionRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<InscripcionResponseDTO> update(@PathVariable Long id, @RequestBody InscripcionRequestDTO request) {
+    public ResponseEntity<InscripcionResponseDTO> update(@PathVariable Long id, @Valid @RequestBody InscripcionRequestDTO request) {
         InscripcionResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }

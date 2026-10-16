@@ -4,27 +4,35 @@ import com.sonorasync.dto.request.RolRequestDTO;
 import com.sonorasync.dto.response.RolResponseDTO;
 import com.sonorasync.model.Rol;
 import com.sonorasync.repository.RepositoryRol;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceRol {
-    @Autowired private RepositoryRol repository;
 
+    private final RepositoryRol repository;
+
+    @Transactional(readOnly = true)
     public List<RolResponseDTO> findAll() {
         return repository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public RolResponseDTO findById(Long id) {
         return repository.findById(id).map(this::toResponseDTO).orElse(null);
     }
 
+    @Transactional
     public RolResponseDTO save(RolRequestDTO dto) {
         return toResponseDTO(repository.save(toEntity(dto)));
     }
 
+    @Transactional
     public RolResponseDTO update(Long id, RolRequestDTO dto) {
         return repository.findById(id).map(entity -> {
             if (dto.getNombre() != null) entity.setNombre(dto.getNombre());
@@ -34,6 +42,7 @@ public class ServiceRol {
         }).orElse(null);
     }
 
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }

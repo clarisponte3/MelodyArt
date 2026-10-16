@@ -3,15 +3,19 @@ package com.sonorasync.controller;
 import com.sonorasync.dto.request.LogAuditoriaRequestDTO;
 import com.sonorasync.dto.response.LogAuditoriaResponseDTO;
 import com.sonorasync.service.ServiceLogAuditoria;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/logs-auditoria")
+@RequiredArgsConstructor
 public class ControllerLogAuditoria {
-    @Autowired private ServiceLogAuditoria service;
+
+    private final ServiceLogAuditoria service;
 
     @GetMapping
     public List<LogAuditoriaResponseDTO> findAll() {
@@ -25,12 +29,12 @@ public class ControllerLogAuditoria {
     }
 
     @PostMapping
-    public ResponseEntity<LogAuditoriaResponseDTO> save(@RequestBody LogAuditoriaRequestDTO request) {
+    public ResponseEntity<LogAuditoriaResponseDTO> save(@Valid @RequestBody LogAuditoriaRequestDTO request) {
         return ResponseEntity.ok(service.save(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LogAuditoriaResponseDTO> update(@PathVariable Long id, @RequestBody LogAuditoriaRequestDTO request) {
+    public ResponseEntity<LogAuditoriaResponseDTO> update(@PathVariable Long id, @Valid @RequestBody LogAuditoriaRequestDTO request) {
         LogAuditoriaResponseDTO updated = service.update(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
