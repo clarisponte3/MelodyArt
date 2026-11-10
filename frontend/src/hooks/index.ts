@@ -1,0 +1,4 @@
+/**
+ * Hooks personalizados transversales
+ */
+export {};

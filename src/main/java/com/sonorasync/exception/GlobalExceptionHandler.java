@@ -102,7 +102,7 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message("El cuerpo de la solicitud no es legible o posee un formato JSON inválido")
+                .message("El cuerpo de la solicitud no es legible o posee un formato inválido")
                 .path(request.getRequestURI())
                 .build();
 
