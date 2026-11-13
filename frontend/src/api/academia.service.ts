@@ -7,6 +7,7 @@ import {
   EstadoCuentaResponseDTO,
   EvaluacionResponseDTO,
   InscripcionResponseDTO,
+  InscripcionRequestDTO,
 } from '../types';
 
 export const AcademiaService = {
@@ -22,6 +23,11 @@ export const AcademiaService = {
 
   getInscripciones: async (): Promise<InscripcionResponseDTO[]> => {
     const { data } = await apiClient.get<InscripcionResponseDTO[]>('/api/inscripciones');
+    return data;
+  },
+
+  inscribirAlumno: async (request: InscripcionRequestDTO): Promise<InscripcionResponseDTO> => {
+    const { data } = await apiClient.post<InscripcionResponseDTO>('/api/inscripciones', request);
     return data;
   },
 

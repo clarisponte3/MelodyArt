@@ -6,6 +6,7 @@ import { MainLayout } from '../layouts/MainLayout';
 import { AuthGuard } from './AuthGuard';
 import { AdminGuard } from './AdminGuard';
 import { GuestGuard } from './GuestGuard';
+import { DocenteGuard } from './DocenteGuard';
 
 // Fallback Loader con Glassmorphism & Neón
 const PageLoader: React.FC = () => (
@@ -52,6 +53,9 @@ const CarritoPage = React.lazy(() =>
 const LoginPage = React.lazy(() =>
   import('../features/auth/LoginPage').then((m) => ({ default: m.LoginPage }))
 );
+const LoginDocentePage = React.lazy(() =>
+  import('../features/auth/LoginDocentePage').then((m) => ({ default: m.LoginDocentePage }))
+);
 const RegisterPage = React.lazy(() =>
   import('../features/auth/RegisterPage').then((m) => ({ default: m.RegisterPage }))
 );
@@ -71,6 +75,9 @@ const MisComprasPage = React.lazy(() =>
 );
 const MisClasesPage = React.lazy(() =>
   import('../features/academia/MisClasesPage').then((m) => ({ default: m.MisClasesPage }))
+);
+const InscripcionPage = React.lazy(() =>
+  import('../features/academia/InscripcionPage').then((m) => ({ default: m.InscripcionPage }))
 );
 const PerfilPage = React.lazy(() =>
   import('../features/perfil/PerfilPage').then((m) => ({ default: m.PerfilPage }))
@@ -199,6 +206,14 @@ export const AppRouter: React.FC = () => {
             }
           />
           <Route
+            path="/login-docente"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <LoginDocentePage />
+              </React.Suspense>
+            }
+          />
+          <Route
             path="/registro"
             element={
               <GuestGuard>
@@ -263,6 +278,16 @@ export const AppRouter: React.FC = () => {
             }
           />
           <Route
+            path="/academia/inscripcion"
+            element={
+              <AuthGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <InscripcionPage />
+                </React.Suspense>
+              </AuthGuard>
+            }
+          />
+          <Route
             path="/perfil"
             element={
               <AuthGuard>
@@ -274,36 +299,36 @@ export const AppRouter: React.FC = () => {
           />
 
           {/* ===============================================================
-              RUTAS PROTEGIDAS PORTAL DOCENTE (AuthGuard)
+              RUTAS PROTEGIDAS PORTAL DOCENTE (DocenteGuard)
               =============================================================== */}
           <Route
             path="/docente/pase-lista"
             element={
-              <AuthGuard>
+              <DocenteGuard>
                 <React.Suspense fallback={<PageLoader />}>
                   <PaseListaPage />
                 </React.Suspense>
-              </AuthGuard>
+              </DocenteGuard>
             }
           />
           <Route
             path="/docente/bitacora"
             element={
-              <AuthGuard>
+              <DocenteGuard>
                 <React.Suspense fallback={<PageLoader />}>
                   <BitacoraPage />
                 </React.Suspense>
-              </AuthGuard>
+              </DocenteGuard>
             }
           />
           <Route
             path="/docente/evaluaciones"
             element={
-              <AuthGuard>
+              <DocenteGuard>
                 <React.Suspense fallback={<PageLoader />}>
                   <EvaluacionesPage />
                 </React.Suspense>
-              </AuthGuard>
+              </DocenteGuard>
             }
           />
 

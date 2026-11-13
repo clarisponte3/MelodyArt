@@ -300,6 +300,8 @@ export interface InscripcionResponseDTO {
   idInscripcion: number;
   alumno: UsuarioResponseDTO;
   clase: ClaseMusicalResponseDTO;
+  idClase?: number;       // alias para acceso directo
+  idClaseMusical?: number; // alias para acceso directo
   fechaInscripcion: string;
   fechaBaja?: string;
   costoAcordado: number;

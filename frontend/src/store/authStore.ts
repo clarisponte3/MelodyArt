@@ -40,8 +40,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: !!initialSession,
 
   login: (authResponse: AuthResponseDTO) => {
-    // Decodificar rol desde el token o asignar por defecto (ROLE_USER o ROLE_ADMIN si es admin@)
+    // Decodificar rol desde el token JWT (campo "roles" o "role" en payload)
     let detectedRole: UserRole = 'ROLE_USER';
+
+    // Fallback por correo (compatibilidad)
     if (authResponse.correo.toLowerCase().includes('admin')) {
       detectedRole = 'ROLE_ADMIN';
     }
@@ -50,10 +52,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const parts = authResponse.token.split('.');
       if (parts.length === 3) {
         const payload = JSON.parse(atob(parts[1]));
-        if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
-          detectedRole = payload.roles[0];
-        } else if (payload.role) {
-          detectedRole = payload.role;
+        const rawRole: string | undefined =
+          Array.isArray(payload.roles) && payload.roles.length > 0
+            ? payload.roles[0]
+            : payload.role ?? undefined;
+
+        if (rawRole) {
+          const upper = rawRole.toUpperCase();
+          if (
+            upper === 'ROLE_ADMIN' ||
+            upper === 'ROLE_ADMINISTRADOR' ||
+            upper === 'ROLE_USER' ||
+            upper === 'ROLE_ALUMNO' ||
+            upper === 'ROLE_DOCENTE' ||
+            upper === 'ROLE_MAESTRO' ||
+            upper === 'ROLE_VENDEDOR'
+          ) {
+            detectedRole = upper as UserRole;
+          }
         }
       }
     } catch {

@@ -2,7 +2,22 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
-import { Music, ShoppingBag, User, LogOut, ChevronDown, Menu, X, Shield, ClipboardList, BookOpen, Award, Warehouse } from 'lucide-react';
+import {
+  Music,
+  ShoppingBag,
+  User,
+  LogOut,
+  ChevronDown,
+  Menu,
+  X,
+  Shield,
+  ClipboardList,
+  BookOpen,
+  Award,
+  Warehouse,
+  GraduationCap,
+  PlusCircle,
+} from 'lucide-react';
 import { NeonButton } from '../components/ui/NeonButton';
 
 export const Navbar: React.FC = () => {
@@ -14,6 +29,18 @@ export const Navbar: React.FC = () => {
 
   const cartCount = getItemCount();
 
+  // ── Helpers de rol ──────────────────────────────────────────────────────────
+  const isAdmin = role === 'ROLE_ADMIN' || role === 'ROLE_ADMINISTRADOR';
+  const isDocente = role === 'ROLE_DOCENTE' || role === 'ROLE_MAESTRO' || isAdmin;
+  // Alumno/Cliente: todo lo que NO sea docente puro ni admin
+  const isAlumnoOrCliente = !isDocente;
+
+  const roleLabel = isAdmin
+    ? 'Administrador'
+    : role === 'ROLE_DOCENTE' || role === 'ROLE_MAESTRO'
+    ? 'Docente'
+    : 'Alumno / Cliente';
+
   const handleLogout = () => {
     logout();
     setIsUserMenuOpen(false);
@@ -23,45 +50,28 @@ export const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/10 backdrop-blur-md">
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 flex items-center justify-center group-hover:shadow-neon-cyan transition-all duration-300">
             <Music className="w-6 h-6 text-neon-cyan" />
           </div>
           <div className="flex flex-col">
-            <span className="font-neon text-3xl neon-text-yellow leading-none tracking-wide">
-              SonoraSync
-            </span>
-            <span className="text-[10px] tracking-widest uppercase text-gray-300 font-medium">
-              MelodyArt Enterprise
-            </span>
+            <span className="font-neon text-3xl neon-text-yellow leading-none tracking-wide">SonoraSync</span>
+            <span className="text-[10px] tracking-widest uppercase text-gray-300 font-medium">MelodyArt Enterprise</span>
           </div>
         </Link>
 
         {/* NAVEGACIÓN DESKTOP */}
         <nav className="hidden lg:flex items-center gap-8 text-sm font-medium">
-          <Link
-            to="/"
-            className="text-gray-300 hover:text-neon-cyan transition-colors py-1 hover:neon-text-cyan-sm"
-          >
-            Inicio
-          </Link>
-          <Link
-            to="/catalogo"
-            className="text-gray-300 hover:text-neon-cyan transition-colors py-1 hover:neon-text-cyan-sm"
-          >
+          <Link to="/" className="text-gray-300 hover:text-neon-cyan transition-colors py-1">Inicio</Link>
+          <Link to="/catalogo" className="text-gray-300 hover:text-neon-cyan transition-colors py-1">
             Catálogo de Instrumentos
           </Link>
-          <Link
-            to="/academia/talleres"
-            className="text-gray-300 hover:text-neon-pink transition-colors py-1 hover:neon-text-pink-sm"
-          >
+          <Link to="/academia/talleres" className="text-gray-300 hover:text-neon-pink transition-colors py-1">
             Academia Musical
           </Link>
-          <Link
-            to="/terminos"
-            className="text-gray-300 hover:text-neon-green transition-colors py-1 flex items-center gap-1.5"
-          >
+          <Link to="/terminos" className="text-gray-300 hover:text-neon-green transition-colors py-1 flex items-center gap-1.5">
             <Shield className="w-4 h-4 text-neon-green" />
             Términos y Condiciones
           </Link>
@@ -69,21 +79,24 @@ export const Navbar: React.FC = () => {
 
         {/* ACCIONES DERECHA */}
         <div className="hidden lg:flex items-center gap-4">
-          {/* BOTÓN CARRITO */}
-          <button
-            onClick={openDrawer}
-            className="relative p-2.5 rounded-xl border border-white/10 hover:border-neon-pink/40 bg-dark-900/60 hover:bg-dark-850 transition-all duration-300 group"
-            title="Ver carrito de compras"
-          >
-            <ShoppingBag className="w-5 h-5 text-gray-300 group-hover:text-neon-pink transition-colors" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-neon-pink text-white font-bold text-[11px] w-5 h-5 rounded-full flex items-center justify-center shadow-neon-pink animate-pulse">
-                {cartCount > 99 ? '99+' : cartCount}
-              </span>
-            )}
-          </button>
 
-          {/* PERFIL / LOGIN */}
+          {/* CARRITO (solo para alumnos / clientes) */}
+          {isAlumnoOrCliente && (
+            <button
+              onClick={openDrawer}
+              className="relative p-2.5 rounded-xl border border-white/10 hover:border-neon-pink/40 bg-dark-900/60 hover:bg-dark-850 transition-all duration-300 group"
+              title="Ver carrito de compras"
+            >
+              <ShoppingBag className="w-5 h-5 text-gray-300 group-hover:text-neon-pink transition-colors" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-neon-pink text-white font-bold text-[11px] w-5 h-5 rounded-full flex items-center justify-center shadow-neon-pink animate-pulse">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* AVATAR + DROPDOWN */}
           {isAuthenticated && user ? (
             <div className="relative">
               <button
@@ -95,21 +108,21 @@ export const Navbar: React.FC = () => {
                 </div>
                 <div className="text-left text-xs">
                   <div className="font-semibold text-white max-w-[120px] truncate">{user.nombre}</div>
-                  <div className="text-[10px] text-neon-cyan uppercase tracking-wider">
-                    {role === 'ROLE_ADMIN' ? 'Administrador' : 'Alumno'}
-                  </div>
+                  <div className="text-[10px] text-neon-cyan uppercase tracking-wider">{roleLabel}</div>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
               </button>
 
-              {/* DROPDOWN MENU */}
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-xl glass-panel border border-neon-cyan/30 py-2 shadow-2xl z-50">
+                <div className="absolute right-0 mt-2 w-60 rounded-xl glass-panel border border-neon-cyan/30 py-2 shadow-2xl z-50">
+                  {/* CABECERA */}
                   <div className="px-4 py-2 border-b border-white/10 text-xs">
                     <p className="text-gray-400">Conectado como:</p>
                     <p className="font-medium text-white truncate">{user.correo}</p>
+                    <p className="text-[10px] text-neon-cyan mt-0.5 uppercase font-semibold tracking-wider">{roleLabel}</p>
                   </div>
 
+                  {/* SIEMPRE: Mi Perfil */}
                   <Link
                     to="/perfil"
                     onClick={() => setIsUserMenuOpen(false)}
@@ -119,58 +132,75 @@ export const Navbar: React.FC = () => {
                     Mi Perfil & Derechos ARCO
                   </Link>
 
-                  <Link
-                    to="/mis-compras"
-                    onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-xs text-gray-300 hover:text-neon-pink hover:bg-white/5 transition-colors"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    Mis Compras & Facturas
-                  </Link>
+                  {/* ── ALUMNO / CLIENTE ── */}
+                  {isAlumnoOrCliente && (
+                    <div className="pt-1 border-t border-white/10">
+                      <span className="px-4 py-1 text-[10px] uppercase tracking-wider text-neon-cyan font-semibold block">
+                        Mi Cuenta
+                      </span>
+                      <Link
+                        to="/mis-compras"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-pink hover:bg-white/5 transition-colors"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5 text-neon-pink" />
+                        Mis Compras & Facturas
+                      </Link>
+                      <Link
+                        to="/mis-clases"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-yellow hover:bg-white/5 transition-colors"
+                      >
+                        <Music className="w-3.5 h-3.5 text-neon-yellow" />
+                        Mis Clases & Asistencias
+                      </Link>
+                      <Link
+                        to="/academia/inscripcion"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-green hover:bg-white/5 transition-colors"
+                      >
+                        <PlusCircle className="w-3.5 h-3.5 text-neon-green" />
+                        Inscribirme a un Taller
+                      </Link>
+                    </div>
+                  )}
 
-                  <Link
-                    to="/mis-clases"
-                    onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-xs text-gray-300 hover:text-neon-yellow hover:bg-white/5 transition-colors"
-                  >
-                    <Music className="w-4 h-4" />
-                    Mis Clases & Asistencias
-                  </Link>
+                  {/* ── DOCENTE (sin admin) ── */}
+                  {isDocente && !isAdmin && (
+                    <div className="pt-1 border-t border-white/10">
+                      <span className="px-4 py-1 text-[10px] uppercase tracking-wider text-neon-yellow font-semibold block">
+                        Portal Docente
+                      </span>
+                      <Link
+                        to="/docente/pase-lista"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-yellow hover:bg-white/5 transition-colors"
+                      >
+                        <ClipboardList className="w-3.5 h-3.5 text-neon-yellow" />
+                        Pase de Lista
+                      </Link>
+                      <Link
+                        to="/docente/bitacora"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-cyan hover:bg-white/5 transition-colors"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 text-neon-cyan" />
+                        Bitácora Pedagógica
+                      </Link>
+                      <Link
+                        to="/docente/evaluaciones"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-pink hover:bg-white/5 transition-colors"
+                      >
+                        <Award className="w-3.5 h-3.5 text-neon-pink" />
+                        Evaluaciones
+                      </Link>
+                    </div>
+                  )}
 
-                  {/* VISTAS DOCENTES */}
-                  <div className="pt-1.5 border-t border-white/10">
-                    <span className="px-4 py-1 text-[10px] uppercase tracking-wider text-neon-yellow font-semibold block">
-                      Docente
-                    </span>
-                    <Link
-                      to="/docente/pase-lista"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-yellow hover:bg-white/5 transition-colors"
-                    >
-                      <ClipboardList className="w-3.5 h-3.5 text-neon-yellow" />
-                      Pase de Lista
-                    </Link>
-                    <Link
-                      to="/docente/bitacora"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-cyan hover:bg-white/5 transition-colors"
-                    >
-                      <BookOpen className="w-3.5 h-3.5 text-neon-cyan" />
-                      Bitácora Pedagógica
-                    </Link>
-                    <Link
-                      to="/docente/evaluaciones"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-pink hover:bg-white/5 transition-colors"
-                    >
-                      <Award className="w-3.5 h-3.5 text-neon-pink" />
-                      Evaluaciones
-                    </Link>
-                  </div>
-
-                  {/* VISTAS ADMINISTRATIVAS */}
-                  {role === 'ROLE_ADMIN' && (
-                    <div className="pt-1.5 border-t border-white/10">
+                  {/* ── ADMINISTRADOR ── */}
+                  {isAdmin && (
+                    <div className="pt-1 border-t border-white/10">
                       <span className="px-4 py-1 text-[10px] uppercase tracking-wider text-neon-green font-semibold block">
                         Administración
                       </span>
@@ -203,7 +233,7 @@ export const Navbar: React.FC = () => {
                         onClick={() => setIsUserMenuOpen(false)}
                         className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-pink hover:bg-white/5 transition-colors"
                       >
-                        <Music className="w-3.5 h-3.5 text-neon-pink" />
+                        <GraduationCap className="w-3.5 h-3.5 text-neon-pink" />
                         Aulas & Talleres
                       </Link>
                       <Link
@@ -213,14 +243,6 @@ export const Navbar: React.FC = () => {
                       >
                         <Shield className="w-3.5 h-3.5 text-neon-orange" />
                         Estados de Cuenta
-                      </Link>
-                      <Link
-                        to="/admin/proveedores"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-green hover:bg-white/5 transition-colors"
-                      >
-                        <Warehouse className="w-3.5 h-3.5 text-neon-green" />
-                        Proveedores
                       </Link>
                       <Link
                         to="/admin/logs"
@@ -233,9 +255,10 @@ export const Navbar: React.FC = () => {
                     </div>
                   )}
 
+                  {/* CERRAR SESIÓN */}
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors border-t border-white/10"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors border-t border-white/10 mt-1"
                   >
                     <LogOut className="w-4 h-4" />
                     Cerrar Sesión
@@ -246,25 +269,18 @@ export const Navbar: React.FC = () => {
           ) : (
             <div className="flex items-center gap-3">
               <Link to="/login">
-                <NeonButton variant="cyan" className="py-2 px-4 text-xs">
-                  Iniciar Sesión
-                </NeonButton>
+                <NeonButton variant="cyan" className="py-2 px-4 text-xs">Iniciar Sesión</NeonButton>
               </Link>
               <Link to="/registro">
-                <NeonButton variant="green" className="py-2 px-4 text-xs">
-                  Crear Cuenta
-                </NeonButton>
+                <NeonButton variant="green" className="py-2 px-4 text-xs">Crear Cuenta</NeonButton>
               </Link>
             </div>
           )}
         </div>
 
-        {/* BOTÓN MÓVIL */}
+        {/* BOTÓN HAMBURGUESA MÓVIL */}
         <div className="lg:hidden flex items-center gap-3">
-          <button
-            onClick={openDrawer}
-            className="relative p-2 text-gray-300 hover:text-neon-pink"
-          >
+          <button onClick={openDrawer} className="relative p-2 text-gray-300 hover:text-neon-pink">
             <ShoppingBag className="w-6 h-6" />
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-neon-pink text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
@@ -272,82 +288,50 @@ export const Navbar: React.FC = () => {
               </span>
             )}
           </button>
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 text-gray-300 hover:text-white"
-          >
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-300 hover:text-white">
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* MENÚ MÓVIL DESPLEGABLE */}
+      {/* MENÚ MÓVIL */}
       {isMobileMenuOpen && (
         <div className="lg:hidden border-t border-white/10 glass-panel px-6 py-6 flex flex-col gap-4">
-          <Link
-            to="/"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="text-gray-200 hover:text-neon-cyan py-1"
-          >
-            Inicio
-          </Link>
-          <Link
-            to="/catalogo"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="text-gray-200 hover:text-neon-cyan py-1"
-          >
-            Catálogo de Instrumentos
-          </Link>
-          <Link
-            to="/academia/talleres"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="text-gray-200 hover:text-neon-pink py-1"
-          >
-            Academia Musical
-          </Link>
-          <Link
-            to="/terminos"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="text-gray-200 hover:text-neon-green py-1"
-          >
-            Términos y Condiciones
-          </Link>
+          <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-200 hover:text-neon-cyan py-1">Inicio</Link>
+          <Link to="/catalogo" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-200 hover:text-neon-cyan py-1">Catálogo de Instrumentos</Link>
+          <Link to="/academia/talleres" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-200 hover:text-neon-pink py-1">Academia Musical</Link>
+          <Link to="/terminos" onClick={() => setIsMobileMenuOpen(false)} className="text-gray-200 hover:text-neon-green py-1">Términos y Condiciones</Link>
 
           <div className="pt-4 border-t border-white/10 flex flex-col gap-3">
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/perfil"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-neon-cyan text-sm"
-                >
-                  Mi Perfil ({user?.nombre})
-                </Link>
-                <Link
-                  to="/mis-compras"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-neon-pink text-sm"
-                >
-                  Mis Compras
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-red-400 text-left text-sm"
-                >
-                  Cerrar Sesión
-                </button>
+                <Link to="/perfil" onClick={() => setIsMobileMenuOpen(false)} className="text-neon-cyan text-sm">Mi Perfil ({user?.nombre})</Link>
+                {isAlumnoOrCliente && (
+                  <>
+                    <Link to="/mis-compras" onClick={() => setIsMobileMenuOpen(false)} className="text-neon-pink text-sm">Mis Compras</Link>
+                    <Link to="/mis-clases" onClick={() => setIsMobileMenuOpen(false)} className="text-neon-yellow text-sm">Mis Clases</Link>
+                    <Link to="/academia/inscripcion" onClick={() => setIsMobileMenuOpen(false)} className="text-neon-green text-sm">Inscribirme a un Taller</Link>
+                  </>
+                )}
+                {isDocente && !isAdmin && (
+                  <>
+                    <Link to="/docente/pase-lista" onClick={() => setIsMobileMenuOpen(false)} className="text-neon-yellow text-sm">Pase de Lista</Link>
+                    <Link to="/docente/bitacora" onClick={() => setIsMobileMenuOpen(false)} className="text-neon-cyan text-sm">Bitácora Pedagógica</Link>
+                    <Link to="/docente/evaluaciones" onClick={() => setIsMobileMenuOpen(false)} className="text-neon-pink text-sm">Evaluaciones</Link>
+                  </>
+                )}
+                {isAdmin && (
+                  <Link to="/admin/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="text-neon-green text-sm">Dashboard Admin</Link>
+                )}
+                <button onClick={handleLogout} className="text-red-400 text-left text-sm">Cerrar Sesión</button>
               </>
             ) : (
               <div className="flex flex-col gap-2">
                 <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <NeonButton variant="cyan" className="w-full">
-                    Iniciar Sesión
-                  </NeonButton>
+                  <NeonButton variant="cyan" className="w-full">Iniciar Sesión</NeonButton>
                 </Link>
                 <Link to="/registro" onClick={() => setIsMobileMenuOpen(false)}>
-                  <NeonButton variant="green" className="w-full">
-                    Crear Cuenta
-                  </NeonButton>
+                  <NeonButton variant="green" className="w-full">Crear Cuenta</NeonButton>
                 </Link>
               </div>
             )}

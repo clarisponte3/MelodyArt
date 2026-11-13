@@ -4,7 +4,14 @@
 
 export * from './api';
 
-export type UserRole = 'ROLE_ADMIN' | 'ROLE_USER' | 'ROLE_MAESTRO' | 'ROLE_ALUMNO' | 'ROLE_VENDEDOR';
+export type UserRole =
+  | 'ROLE_ADMIN'
+  | 'ROLE_ADMINISTRADOR'
+  | 'ROLE_USER'
+  | 'ROLE_ALUMNO'
+  | 'ROLE_DOCENTE'
+  | 'ROLE_MAESTRO'
+  | 'ROLE_VENDEDOR';
 
 export interface UserSession {
   userId: number;

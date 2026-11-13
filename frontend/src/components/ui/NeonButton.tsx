@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface NeonButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'green' | 'orange' | 'cyan' | 'pink';
+  variant?: 'green' | 'orange' | 'cyan' | 'pink' | 'gold';
   glow?: boolean;
 }
 
@@ -12,18 +12,20 @@ export const NeonButton: React.FC<NeonButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const variantStyles = {
+  const variantStyles: Record<string, string> = {
     green: 'border-neon-green text-neon-green hover:bg-neon-green hover:text-black',
     orange: 'border-neon-orange text-neon-orange hover:bg-neon-orange hover:text-white',
     cyan: 'border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black',
     pink: 'border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-white',
+    gold: 'border-neon-yellow text-neon-yellow hover:bg-neon-yellow hover:text-black',
   };
 
-  const glowStyles = {
+  const glowStyles: Record<string, string> = {
     green: 'hover:shadow-neon-green',
     orange: 'hover:shadow-neon-orange',
     cyan: 'hover:shadow-neon-cyan',
     pink: 'hover:shadow-neon-pink',
+    gold: 'hover:shadow-neon-yellow',
   };
 
   return (
