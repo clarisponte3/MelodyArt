@@ -1,169 +1,496 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { User, Shield, AlertCircle, CheckCircle } from 'lucide-react';
+import apiClient from '../../api/apiClient';
+import { NeonButton } from '../../components/ui/NeonButton';
+import { GlassCard } from '../../components/ui/GlassCard';
 import { useAuthStore } from '../../store/authStore';
 import { showToast } from '../../store/notificationStore';
-import { GlassCard } from '../../components/ui/GlassCard';
-import { NeonButton } from '../../components/ui/NeonButton';
-import { User, ShieldCheck } from 'lucide-react';
+import type { UsuarioResponseDTO, UsuarioRequestDTO } from '../../types';
 
+// ---------------------------------------------------------------------------
+// Tab type
+// ---------------------------------------------------------------------------
+type TabId = 'perfil' | 'arco';
+
+// ---------------------------------------------------------------------------
+// ARCO reason options
+// ---------------------------------------------------------------------------
+const CANCEL_REASONS = [
+  'Ya no deseo recibir comunicaciones',
+  'No consiento el tratamiento de mis datos',
+  'Deseo eliminar mi cuenta',
+  'Otros motivos',
+];
+
+const RECT_REASONS = [
+  'Nombre o apellidos incorrectos',
+  'Correo electrónico incorrecto',
+  'Domicilio desactualizado',
+  'Fecha de nacimiento incorrecta',
+  'Otros datos incorrectos',
+];
+
+// ---------------------------------------------------------------------------
+// Field validation helpers
+// ---------------------------------------------------------------------------
+interface FormErrors {
+  nombre?: string;
+  apellidos?: string;
+  telefono?: string;
+  direccion?: string;
+  fechaNacimiento?: string;
+}
+
+const validate = (field: keyof FormErrors, value: string): string | undefined => {
+  switch (field) {
+    case 'nombre':
+      return value.trim().length < 2 ? 'El nombre debe tener al menos 2 caracteres.' : undefined;
+    case 'apellidos':
+      return value.trim().length < 2 ? 'Los apellidos deben tener al menos 2 caracteres.' : undefined;
+    case 'telefono':
+      return value && !/^\d{10}$/.test(value.replace(/\s/g, ''))
+        ? 'Ingresa un teléfono de 10 dígitos.'
+        : undefined;
+    case 'fechaNacimiento':
+      return value && isNaN(Date.parse(value)) ? 'Fecha inválida.' : undefined;
+    default:
+      return undefined;
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 export const PerfilPage: React.FC = () => {
   const { user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<TabId>('perfil');
 
-  const [formData, setFormData] = useState({
-    nombre: user?.nombre || '',
-    correo: user?.correo || '',
-    telefono: '55 1234 5678',
-    direccion: 'Av. Insurgentes Sur 1200, Benito Juárez, CDMX',
-    curp: 'MELJ010203HDFRNS09',
+  // ---- Profile form ----
+  const [profile, setProfile] = useState<UsuarioResponseDTO | null>(null);
+  const [form, setForm] = useState<Omit<UsuarioRequestDTO, 'correo' | 'contrasena' | 'contrasenaHash' | 'activo' | 'curp'>>({
+    nombre: '',
+    apellidos: '',
+    telefono: '',
+    direccion: '',
+    fechaNacimiento: '',
   });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
-  const [isSaving, setIsSaving] = useState(false);
+  // ---- ARCO forms ----
+  const [cancelReason, setCancelReason] = useState(CANCEL_REASONS[0]);
+  const [cancelDesc, setCancelDesc] = useState('');
+  const [rectReason, setRectReason] = useState(RECT_REASONS[0]);
+  const [rectDesc, setRectDesc] = useState('');
+  const [arcoSubmitted, setArcoSubmitted] = useState<'cancel' | 'rect' | null>(null);
 
-  const handleSave = (e: React.FormEvent) => {
+  // Fetch profile data
+  useEffect(() => {
+    if (!user?.userId) return;
+    apiClient
+      .get<UsuarioResponseDTO>(`/api/usuarios/${user.userId}`)
+      .then((r) => {
+        setProfile(r.data);
+        setForm({
+          nombre: r.data.nombre ?? '',
+          apellidos: r.data.apellidos ?? '',
+          telefono: r.data.telefono ?? '',
+          direccion: r.data.direccion ?? '',
+          fechaNacimiento: r.data.fechaNacimiento ?? '',
+        });
+      })
+      .catch(() => showToast('error', 'No se pudo cargar tu perfil.'))
+      .finally(() => setLoadingProfile(false));
+  }, [user?.userId]);
+
+  const handleBlur = (field: keyof FormErrors, value: string) => {
+    setErrors((prev) => ({ ...prev, [field]: validate(field, value) }));
+  };
+
+  const handleChange = (field: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      showToast('success', 'Tus datos han sido actualizados con éxito.', 'Perfil Guardado');
-    }, 600);
+    // Run all validations
+    const newErrors: FormErrors = {};
+    (Object.keys(form) as (keyof FormErrors)[]).forEach((k) => {
+      const err = validate(k, (form as Record<string, string>)[k] ?? '');
+      if (err) newErrors[k] = err;
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      await apiClient.put(`/api/usuarios/${user?.userId}`, {
+        ...form,
+        correo: profile?.correo,
+        activo: true,
+      });
+      showToast('success', 'Tu perfil ha sido actualizado correctamente.', 'Perfil Actualizado');
+    } catch {
+      // apiClient interceptor shows toast
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
-  const handleArcoRequest = (tipo: string) => {
+  const handleArcoSubmit = (type: 'cancel' | 'rect') => {
+    // In a real implementation this would POST to an ARCO endpoint
     showToast(
-      'info',
-      `Tu solicitud de Derecho ARCO (${tipo}) ha sido registrada formalmente con folio ARCO-${Date.now().toString().slice(-4)}. Se responderá en menos de 20 días hábiles conforme a la LFPDPPP.`,
-      'Solicitud LFPDPPP Registrada'
+      'success',
+      'Tu solicitud ARCO ha sido recibida. La atenderemos en un máximo de 20 días hábiles.',
+      'Solicitud ARCO Enviada'
     );
+    setArcoSubmitted(type);
   };
 
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
   return (
-    <div className="container mx-auto px-6 py-12 max-w-4xl">
+    <div className="container mx-auto px-6 py-12 max-w-3xl">
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-1">Mi Cuenta y Perfil</h1>
-        <p className="text-xs text-gray-400">
-          Gestiona tu información de contacto, credenciales y tus derechos ARCO conforme a la ley mexicana.
-        </p>
+        <span className="text-xs font-semibold text-neon-green uppercase tracking-widest">
+          Cuenta Personal
+        </span>
+        <h1 className="text-3xl font-bold text-white mt-2">Mi Perfil & Privacidad</h1>
       </div>
 
-      <div className="space-y-8">
-        {/* FORMULARIO DE DATOS PERSONALES */}
-        <GlassCard accent="cyan" className="p-8">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-            <User className="w-5 h-5 text-neon-cyan" />
-            <h2 className="text-lg font-bold text-white">Información de Contacto</h2>
-          </div>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-8 glass-panel rounded-xl p-1 w-fit">
+        {(['perfil', 'arco'] as TabId[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setActiveTab(t)}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
+              activeTab === t
+                ? 'bg-neon-green/20 text-neon-green border border-neon-green/40'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            {t === 'perfil' ? (
+              <>
+                <User className="w-4 h-4" /> Mi Perfil
+              </>
+            ) : (
+              <>
+                <Shield className="w-4 h-4" /> Derechos ARCO (LFPDPPP)
+              </>
+            )}
+          </button>
+        ))}
+      </div>
 
-          <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* ------------------------------------------------------------------ */}
+      {/* TAB 1 — Perfil */}
+      {/* ------------------------------------------------------------------ */}
+      {activeTab === 'perfil' && (
+        <GlassCard accent="cyan">
+          {loadingProfile ? (
+            <div className="space-y-4 animate-pulse">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-10 bg-white/10 rounded-lg" />
+              ))}
+            </div>
+          ) : (
+            <form onSubmit={handleSaveProfile} className="space-y-5" noValidate>
+              {/* Correo (readonly) */}
               <div>
-                <label className="block text-xs text-gray-300 mb-1">Nombre Completo</label>
-                <input
-                  type="text"
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="w-full bg-dark-900 border border-white/15 focus:border-neon-cyan rounded-xl py-2 px-3 text-xs text-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs text-gray-300 mb-1">Correo Electrónico (No modificable)</label>
+                <label className="block text-xs font-semibold text-gray-400 mb-1.5">
+                  Correo Electrónico{' '}
+                  <span className="text-gray-600">(no editable)</span>
+                </label>
                 <input
                   type="email"
-                  value={formData.correo}
-                  disabled
-                  className="w-full bg-dark-950 border border-white/10 rounded-xl py-2 px-3 text-xs text-gray-500 cursor-not-allowed"
+                  value={profile?.correo ?? ''}
+                  readOnly
+                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-gray-500 cursor-not-allowed text-sm"
                 />
               </div>
 
+              {/* Nombre */}
               <div>
-                <label className="block text-xs text-gray-300 mb-1">Teléfono Móvil</label>
-                <input
-                  type="tel"
-                  value={formData.telefono}
-                  onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                  className="w-full bg-dark-900 border border-white/15 focus:border-neon-cyan rounded-xl py-2 px-3 text-xs text-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs text-gray-300 mb-1">CURP Registrada</label>
+                <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                  Nombre *
+                </label>
                 <input
                   type="text"
-                  value={formData.curp}
-                  disabled
-                  className="w-full bg-dark-950 border border-white/10 rounded-xl py-2 px-3 text-xs text-gray-400 font-mono"
+                  value={form.nombre}
+                  onChange={(e) => handleChange('nombre', e.target.value)}
+                  onBlur={(e) => handleBlur('nombre', e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg bg-white/5 border text-white text-sm transition-colors ${
+                    errors.nombre
+                      ? 'border-neon-pink focus:border-neon-pink'
+                      : 'border-white/10 focus:border-neon-cyan'
+                  } outline-none`}
+                />
+                {errors.nombre && (
+                  <p className="mt-1 text-xs text-neon-pink">{errors.nombre}</p>
+                )}
+              </div>
+
+              {/* Apellidos */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                  Apellidos *
+                </label>
+                <input
+                  type="text"
+                  value={form.apellidos}
+                  onChange={(e) => handleChange('apellidos', e.target.value)}
+                  onBlur={(e) => handleBlur('apellidos', e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg bg-white/5 border text-white text-sm transition-colors ${
+                    errors.apellidos
+                      ? 'border-neon-pink focus:border-neon-pink'
+                      : 'border-white/10 focus:border-neon-cyan'
+                  } outline-none`}
+                />
+                {errors.apellidos && (
+                  <p className="mt-1 text-xs text-neon-pink">{errors.apellidos}</p>
+                )}
+              </div>
+
+              {/* Teléfono */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  value={form.telefono ?? ''}
+                  onChange={(e) => handleChange('telefono', e.target.value)}
+                  onBlur={(e) => handleBlur('telefono', e.target.value)}
+                  placeholder="10 dígitos"
+                  className={`w-full px-4 py-3 rounded-lg bg-white/5 border text-white text-sm transition-colors ${
+                    errors.telefono
+                      ? 'border-neon-pink focus:border-neon-pink'
+                      : 'border-white/10 focus:border-neon-cyan'
+                  } outline-none`}
+                />
+                {errors.telefono && (
+                  <p className="mt-1 text-xs text-neon-pink">{errors.telefono}</p>
+                )}
+              </div>
+
+              {/* Dirección */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                  Dirección
+                </label>
+                <input
+                  type="text"
+                  value={form.direccion ?? ''}
+                  onChange={(e) => handleChange('direccion', e.target.value)}
+                  onBlur={(e) => handleBlur('direccion', e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-neon-cyan text-white text-sm outline-none"
                 />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs text-gray-300 mb-1">Dirección Registrada para Envíos</label>
-              <input
-                type="text"
-                value={formData.direccion}
-                onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                className="w-full bg-dark-900 border border-white/15 focus:border-neon-cyan rounded-xl py-2 px-3 text-xs text-white outline-none"
-              />
-            </div>
+              {/* Fecha de nacimiento */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                  Fecha de Nacimiento
+                </label>
+                <input
+                  type="date"
+                  value={form.fechaNacimiento ?? ''}
+                  onChange={(e) => handleChange('fechaNacimiento', e.target.value)}
+                  onBlur={(e) => handleBlur('fechaNacimiento', e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg bg-white/5 border text-white text-sm transition-colors ${
+                    errors.fechaNacimiento
+                      ? 'border-neon-pink focus:border-neon-pink'
+                      : 'border-white/10 focus:border-neon-cyan'
+                  } outline-none`}
+                />
+                {errors.fechaNacimiento && (
+                  <p className="mt-1 text-xs text-neon-pink">{errors.fechaNacimiento}</p>
+                )}
+              </div>
 
-            <div className="flex justify-end pt-2">
-              <NeonButton variant="cyan" type="submit" disabled={isSaving}>
-                <span>{isSaving ? 'Guardando...' : 'Guardar Cambios'}</span>
-              </NeonButton>
-            </div>
-          </form>
+              <div className="pt-2">
+                <NeonButton
+                  type="submit"
+                  variant="green"
+                  disabled={savingProfile}
+                  className="w-full py-3 disabled:opacity-60"
+                >
+                  {savingProfile ? 'Guardando…' : 'Guardar Cambios'}
+                </NeonButton>
+              </div>
+            </form>
+          )}
         </GlassCard>
+      )}
 
-        {/* SECCIÓN OBLIGATORIA DERECHOS ARCO (LFPDPPP MÉXICO) */}
-        <GlassCard accent="gold" className="p-8">
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
-            <ShieldCheck className="w-5 h-5 text-neon-green" />
-            <div>
-              <h2 className="text-lg font-bold text-white">Gestión de Derechos ARCO (LFPDPPP)</h2>
-              <span className="text-[11px] text-gray-400">
-                Acceso, Rectificación, Cancelación y Oposición de Datos Personales
-              </span>
+      {/* ------------------------------------------------------------------ */}
+      {/* TAB 2 — Derechos ARCO */}
+      {/* ------------------------------------------------------------------ */}
+      {activeTab === 'arco' && (
+        <div className="space-y-6">
+          {/* Info banner */}
+          <div className="glass-panel border border-neon-cyan/30 rounded-xl p-5">
+            <div className="flex items-start gap-3">
+              <Shield className="w-5 h-5 text-neon-cyan flex-shrink-0 mt-0.5" />
+              <div>
+                <h2 className="font-bold text-white text-base mb-2">¿Qué son los Derechos ARCO?</h2>
+                <p className="text-gray-300 text-sm leading-relaxed mb-3">
+                  Conforme a la{' '}
+                  <span className="text-neon-cyan font-semibold">
+                    Ley Federal de Protección de Datos Personales en Posesión de Particulares
+                    (LFPDPPP)
+                  </span>
+                  , tienes derecho a:
+                </p>
+                <ul className="space-y-1.5 text-sm text-gray-300">
+                  {[
+                    ['A', 'Acceso', 'Conocer qué datos personales tenemos sobre ti.'],
+                    ['R', 'Rectificación', 'Corregir datos inexactos o incompletos.'],
+                    ['C', 'Cancelación', 'Solicitar la eliminación de tus datos.'],
+                    ['O', 'Oposición', 'Oponerte al tratamiento de tus datos.'],
+                  ].map(([letter, name, desc]) => (
+                    <li key={letter} className="flex items-start gap-2">
+                      <span className="font-bold text-neon-cyan w-5 flex-shrink-0">{letter}</span>
+                      <span>
+                        <span className="font-semibold text-white">{name}:</span> {desc}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-4 flex items-start gap-2 bg-neon-yellow/5 border border-neon-yellow/30 rounded-lg p-3">
+                  <AlertCircle className="w-4 h-4 text-neon-yellow flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-gray-300">
+                    Atenderemos tu solicitud en un plazo máximo de{' '}
+                    <span className="font-semibold text-white">20 días hábiles</span> conforme al{' '}
+                    <span className="text-neon-yellow font-semibold">Art. 32 LFPDPPP</span>.
+                    Puedes contactarnos en{' '}
+                    <a
+                      href="mailto:privacidad@sonorasync.mx"
+                      className="text-neon-cyan hover:underline"
+                    >
+                      privacidad@sonorasync.mx
+                    </a>
+                    .
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <p className="text-xs text-gray-300 mb-6 leading-relaxed">
-            Como titular de los datos en SonoraSync / MelodyArt, tienes el derecho inalienable de controlar el destino de tu información conforme al marco normativo del INAI y la LFPDPPP.
-          </p>
+          {/* Cancelación */}
+          <GlassCard accent="pink">
+            <h3 className="font-bold text-white text-base mb-4 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-neon-pink" />
+              Solicitud de Cancelación (Eliminación de Datos)
+            </h3>
+            {arcoSubmitted === 'cancel' ? (
+              <div className="flex items-center gap-3 text-neon-green">
+                <CheckCircle className="w-5 h-5" />
+                <span className="text-sm font-semibold">
+                  Solicitud enviada. Te contactaremos en máximo 20 días hábiles.
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                    Motivo de cancelación
+                  </label>
+                  <select
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-neon-pink text-white text-sm outline-none"
+                  >
+                    {CANCEL_REASONS.map((r) => (
+                      <option key={r} value={r} className="bg-dark-900">
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                    Descripción adicional
+                  </label>
+                  <textarea
+                    value={cancelDesc}
+                    onChange={(e) => setCancelDesc(e.target.value)}
+                    rows={3}
+                    placeholder="Describe tu solicitud con más detalle (opcional)..."
+                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-neon-pink text-white text-sm outline-none resize-none"
+                  />
+                </div>
+                <NeonButton
+                  variant="pink"
+                  onClick={() => handleArcoSubmit('cancel')}
+                  className="w-full"
+                >
+                  Enviar Solicitud de Cancelación
+                </NeonButton>
+              </div>
+            )}
+          </GlassCard>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            <button
-              onClick={() => handleArcoRequest('Acceso')}
-              className="p-3 rounded-xl border border-white/10 hover:border-neon-cyan bg-dark-900/60 text-xs text-left transition-colors"
-            >
-              <strong className="text-neon-cyan block mb-1">1. Acceso</strong>
-              <span className="text-[11px] text-gray-400">Solicitar copia de mi expediente completo.</span>
-            </button>
-
-            <button
-              onClick={() => handleArcoRequest('Rectificación')}
-              className="p-3 rounded-xl border border-white/10 hover:border-neon-pink bg-dark-900/60 text-xs text-left transition-colors"
-            >
-              <strong className="text-neon-pink block mb-1">2. Rectificación</strong>
-              <span className="text-[11px] text-gray-400">Actualizar datos inexactos o erróneos.</span>
-            </button>
-
-            <button
-              onClick={() => handleArcoRequest('Cancelación')}
-              className="p-3 rounded-xl border border-white/10 hover:border-neon-yellow bg-dark-900/60 text-xs text-left transition-colors"
-            >
-              <strong className="text-neon-yellow block mb-1">3. Cancelación</strong>
-              <span className="text-[11px] text-gray-400">Bloquear y dar de baja mi cuenta y datos.</span>
-            </button>
-
-            <button
-              onClick={() => handleArcoRequest('Oposición')}
-              className="p-3 rounded-xl border border-white/10 hover:border-neon-green bg-dark-900/60 text-xs text-left transition-colors"
-            >
-              <strong className="text-neon-green block mb-1">4. Oposición</strong>
-              <span className="text-[11px] text-gray-400">Oponerme a fines promocionales o terceros.</span>
-            </button>
-          </div>
-        </GlassCard>
-      </div>
+          {/* Rectificación */}
+          <GlassCard accent="cyan">
+            <h3 className="font-bold text-white text-base mb-4 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-neon-cyan" />
+              Solicitud de Rectificación de Datos
+            </h3>
+            {arcoSubmitted === 'rect' ? (
+              <div className="flex items-center gap-3 text-neon-green">
+                <CheckCircle className="w-5 h-5" />
+                <span className="text-sm font-semibold">
+                  Solicitud enviada. Te contactaremos en máximo 20 días hábiles.
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                    Dato a rectificar
+                  </label>
+                  <select
+                    value={rectReason}
+                    onChange={(e) => setRectReason(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-neon-cyan text-white text-sm outline-none"
+                  >
+                    {RECT_REASONS.map((r) => (
+                      <option key={r} value={r} className="bg-dark-900">
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                    Descripción del cambio solicitado
+                  </label>
+                  <textarea
+                    value={rectDesc}
+                    onChange={(e) => setRectDesc(e.target.value)}
+                    rows={3}
+                    placeholder="Especifica qué datos deseas rectificar y los valores correctos..."
+                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-neon-cyan text-white text-sm outline-none resize-none"
+                  />
+                </div>
+                <NeonButton
+                  variant="cyan"
+                  onClick={() => handleArcoSubmit('rect')}
+                  className="w-full"
+                >
+                  Enviar Solicitud de Rectificación
+                </NeonButton>
+              </div>
+            )}
+          </GlassCard>
+        </div>
+      )}
     </div>
   );
 };

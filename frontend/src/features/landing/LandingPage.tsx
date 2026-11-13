@@ -4,14 +4,10 @@ import { ProductosService } from '../../api/productos.service';
 import { ProductoResponseDTO } from '../../types';
 import { useCartStore } from '../../store/cartStore';
 import { NeonButton } from '../../components/ui/NeonButton';
-import { GlassCard } from '../../components/ui/GlassCard';
+import { QuoteOfTheDay } from '../../components/ui/QuoteOfTheDay';
 import {
   Music,
   ShoppingBag,
-  Disc,
-  Radio,
-  Headphones,
-  CloudLightning,
   ShieldCheck,
   Sparkles,
   ArrowRight,
@@ -98,9 +94,9 @@ export const LandingPage: React.FC = () => {
           Aprende, perfecciona y equipa tu pasión musical con SonoraSync
         </h2>
 
-        <p className="max-w-2xl text-gray-300 text-base md:text-lg leading-relaxed mb-10">
-          Descubre instrumentos musicales acústicos y profesionales con precios transparentes en Pesos Mexicanos (IVA del 16% desglosado), garantías de fábrica y el control integral de tus talleres culturales.
-        </p>
+        <div className="w-full mb-10">
+          <QuoteOfTheDay />
+        </div>
 
         <div className="flex flex-wrap items-center justify-center gap-5 mb-16">
           <Link to="/catalogo">
@@ -135,55 +131,6 @@ export const LandingPage: React.FC = () => {
             <div className="text-2xl md:text-3xl font-bold text-neon-green font-mono">25+</div>
             <div className="text-xs text-gray-400 uppercase tracking-wider">Talleres Musicales</div>
           </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          NARRATIVA DECORATIVA: LAS 5 ERAS DE LA MÚSICA
-          ========================================================================= */}
-      <section className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <span className="text-xs font-semibold text-neon-pink uppercase tracking-widest">
-            Storytelling Inmersivo
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mt-2">
-            Un Viaje por la Historia del Sonido
-          </h2>
-          <p className="text-gray-400 text-sm max-w-xl mx-auto mt-2">
-            Al desplazarte por la plataforma, el fondo continuo revela las cinco grandes etapas de la producción y reproducción sonora.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <GlassCard accent="gold" className="text-center p-5">
-            <Disc className="w-8 h-8 text-amber-400 mx-auto mb-3 animate-spin duration-1000" />
-            <h4 className="text-sm font-semibold text-amber-300 mb-1">1. Vinilo Analógico</h4>
-            <p className="text-[11px] text-gray-400">Calidez armónica y surcos giratorios en tocadiscos clásicos.</p>
-          </GlassCard>
-
-          <GlassCard accent="cyan" className="text-center p-5">
-            <Radio className="w-8 h-8 text-neon-cyan mx-auto mb-3" />
-            <h4 className="text-sm font-semibold text-neon-cyan mb-1">2. Cinta Magnética</h4>
-            <p className="text-[11px] text-gray-400">La era del casete y las grabadoras boombox que liberaron la música.</p>
-          </GlassCard>
-
-          <GlassCard accent="pink" className="text-center p-5">
-            <Disc className="w-8 h-8 text-neon-pink mx-auto mb-3" />
-            <h4 className="text-sm font-semibold text-neon-pink mb-1">3. Disco Compacto</h4>
-            <p className="text-[11px] text-gray-400">Reflejos iridiscentes y fidelidad de audio digital sin ruidos de fondo.</p>
-          </GlassCard>
-
-          <GlassCard accent="cyan" className="text-center p-5">
-            <Headphones className="w-8 h-8 text-neon-green mx-auto mb-3" />
-            <h4 className="text-sm font-semibold text-neon-green mb-1">4. Generación MP3</h4>
-            <p className="text-[11px] text-gray-400">Ecualizadores dinámicos y miles de melodías en tu bolsillo.</p>
-          </GlassCard>
-
-          <GlassCard accent="pink" className="text-center p-5">
-            <CloudLightning className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-            <h4 className="text-sm font-semibold text-purple-300 mb-1">5. Cloud Streaming</h4>
-            <p className="text-[11px] text-gray-400">Ondas inalámbricas puras conectando el arte sonoro con el mundo.</p>
-          </GlassCard>
         </div>
       </section>
 

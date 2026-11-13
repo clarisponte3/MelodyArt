@@ -5,6 +5,7 @@ import com.sonorasync.dto.response.UsuarioResponseDTO;
 import com.sonorasync.model.Usuario;
 import com.sonorasync.repository.RepositoryUsuario;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class ServiceUsuario {
 
     private final RepositoryUsuario repository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> findAll() {
@@ -44,7 +46,7 @@ public class ServiceUsuario {
             if (dto.getFechaNacimiento() != null) entity.setFechaNacimiento(dto.getFechaNacimiento());
             if (dto.getCurp() != null) entity.setCurp(dto.getCurp());
             if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
-                entity.setContrasenaHash(dto.getContrasena());
+                entity.setContrasenaHash(passwordEncoder.encode(dto.getContrasena()));
             }
             if (dto.getActivo() != null) entity.setActivo(dto.getActivo());
             entity.setActualizadoEn(LocalDateTime.now());
@@ -86,10 +88,14 @@ public class ServiceUsuario {
         if (dto.getDireccion() != null) entity.setDireccion(dto.getDireccion());
         if (dto.getFechaNacimiento() != null) entity.setFechaNacimiento(dto.getFechaNacimiento());
         if (dto.getCurp() != null) entity.setCurp(dto.getCurp());
-        if (dto.getContrasena() != null) {
-            entity.setContrasenaHash(dto.getContrasena());
-        } else if (dto.getContrasenaHash() != null) {
-            entity.setContrasenaHash(dto.getContrasenaHash());
+        if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
+            entity.setContrasenaHash(passwordEncoder.encode(dto.getContrasena()));
+        } else if (dto.getContrasenaHash() != null && !dto.getContrasenaHash().isBlank()) {
+            if (dto.getContrasenaHash().startsWith("$2a$") || dto.getContrasenaHash().startsWith("$2b$") || dto.getContrasenaHash().startsWith("$2y$")) {
+                entity.setContrasenaHash(dto.getContrasenaHash());
+            } else {
+                entity.setContrasenaHash(passwordEncoder.encode(dto.getContrasenaHash()));
+            }
         }
         if (dto.getActivo() != null) entity.setActivo(dto.getActivo());
         if (entity.getActivo() == null) entity.setActivo(true);

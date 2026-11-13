@@ -7,53 +7,194 @@ import { AuthGuard } from './AuthGuard';
 import { AdminGuard } from './AdminGuard';
 import { GuestGuard } from './GuestGuard';
 
+// Fallback Loader con Glassmorphism & Neón
+const PageLoader: React.FC = () => (
+  <div
+    className="flex-1 flex flex-col items-center justify-center min-h-[60vh] gap-4"
+    role="status"
+    aria-label="Cargando vista"
+  >
+    <div className="w-12 h-12 rounded-full border-2 border-neon-cyan/20 border-t-neon-cyan animate-spin shadow-neon-cyan" />
+    <span className="text-xs uppercase tracking-widest text-neon-cyan/80 font-mono animate-pulse">
+      Cargando SonoraSync...
+    </span>
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// CODE SPLITTING (React.lazy) PARA TODAS LAS RUTAS
+// ---------------------------------------------------------------------------
+
 // Páginas Públicas
-import { LandingPage } from '../features/landing/LandingPage';
-import { CatalogoPage } from '../features/catalogo/CatalogoPage';
-import { ProductoDetailPage } from '../features/catalogo/ProductoDetailPage';
-import { TalleresPage } from '../features/academia/TalleresPage';
-import { PrivacidadPage } from '../features/legal/PrivacidadPage';
-import { TerminosPage } from '../features/legal/TerminosPage';
-import { CarritoPage } from '../features/checkout/CarritoPage';
+const LandingPage = React.lazy(() =>
+  import('../features/landing/LandingPage').then((m) => ({ default: m.LandingPage }))
+);
+const CatalogoPage = React.lazy(() =>
+  import('../features/catalogo/CatalogoPage').then((m) => ({ default: m.CatalogoPage }))
+);
+const ProductoDetailPage = React.lazy(() =>
+  import('../features/catalogo/ProductoDetailPage').then((m) => ({ default: m.ProductoDetailPage }))
+);
+const TalleresPage = React.lazy(() =>
+  import('../features/academia/TalleresPage').then((m) => ({ default: m.TalleresPage }))
+);
+const PrivacidadPage = React.lazy(() =>
+  import('../features/legal/PrivacidadPage').then((m) => ({ default: m.PrivacidadPage }))
+);
+const TerminosPage = React.lazy(() =>
+  import('../features/legal/TerminosPage').then((m) => ({ default: m.TerminosPage }))
+);
+const CarritoPage = React.lazy(() =>
+  import('../features/checkout/CarritoPage').then((m) => ({ default: m.CarritoPage }))
+);
 
 // Autenticación (GuestGuard)
-import { LoginPage } from '../features/auth/LoginPage';
-import { RegisterPage } from '../features/auth/RegisterPage';
+const LoginPage = React.lazy(() =>
+  import('../features/auth/LoginPage').then((m) => ({ default: m.LoginPage }))
+);
+const RegisterPage = React.lazy(() =>
+  import('../features/auth/RegisterPage').then((m) => ({ default: m.RegisterPage }))
+);
 
 // Protegidas Cliente / Alumno (AuthGuard)
-import { DashboardPage } from '../features/dashboard/DashboardPage';
-import { CheckoutPage } from '../features/checkout/CheckoutPage';
-import { CheckoutSuccessPage } from '../features/checkout/CheckoutSuccessPage';
-import { MisComprasPage } from '../features/checkout/MisComprasPage';
-import { MisClasesPage } from '../features/academia/MisClasesPage';
-import { PerfilPage } from '../features/perfil/PerfilPage';
+const DashboardPage = React.lazy(() =>
+  import('../features/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage }))
+);
+const CheckoutPage = React.lazy(() =>
+  import('../features/checkout/CheckoutPage').then((m) => ({ default: m.CheckoutPage }))
+);
+const CheckoutSuccessPage = React.lazy(() =>
+  import('../features/checkout/CheckoutSuccessPage').then((m) => ({ default: m.CheckoutSuccessPage }))
+);
+const MisComprasPage = React.lazy(() =>
+  import('../features/checkout/MisComprasPage').then((m) => ({ default: m.MisComprasPage }))
+);
+const MisClasesPage = React.lazy(() =>
+  import('../features/academia/MisClasesPage').then((m) => ({ default: m.MisClasesPage }))
+);
+const PerfilPage = React.lazy(() =>
+  import('../features/perfil/PerfilPage').then((m) => ({ default: m.PerfilPage }))
+);
 
-// Protegidas Administrador (AdminGuard)
-import { AdminDashboardPage } from '../features/admin/AdminDashboardPage';
+// Protegidas Portal Docente (AuthGuard)
+const PaseListaPage = React.lazy(() =>
+  import('../features/docente/PaseListaPage').then((m) => ({ default: m.PaseListaPage }))
+);
+const BitacoraPage = React.lazy(() =>
+  import('../features/docente/BitacoraPage').then((m) => ({ default: m.BitacoraPage }))
+);
+const EvaluacionesPage = React.lazy(() =>
+  import('../features/docente/EvaluacionesPage').then((m) => ({ default: m.EvaluacionesPage }))
+);
 
-// 404
-import { NotFoundPage } from '../features/common/NotFoundPage';
+// Protegidas Panel Administrativo (AdminGuard)
+const AdminDashboardPage = React.lazy(() =>
+  import('../features/admin/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage }))
+);
+const InventarioPage = React.lazy(() =>
+  import('../features/admin/InventarioPage').then((m) => ({ default: m.InventarioPage }))
+);
+const ProveedoresPage = React.lazy(() =>
+  import('../features/admin/ProveedoresPage').then((m) => ({ default: m.ProveedoresPage }))
+);
+const EstadosCuentaPage = React.lazy(() =>
+  import('../features/admin/EstadosCuentaPage').then((m) => ({ default: m.EstadosCuentaPage }))
+);
+const AulasPage = React.lazy(() =>
+  import('../features/admin/AulasPage').then((m) => ({ default: m.AulasPage }))
+);
+const PaseListaAdminPage = React.lazy(() =>
+  import('../features/admin/PaseListaAdminPage').then((m) => ({ default: m.PaseListaAdminPage }))
+);
+const LogsAuditoriaPage = React.lazy(() =>
+  import('../features/admin/LogsAuditoriaPage').then((m) => ({ default: m.LogsAuditoriaPage }))
+);
+
+// 404 Not Found
+const NotFoundPage = React.lazy(() =>
+  import('../features/common/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
+);
 
 export const AppRouter: React.FC = () => {
   return (
     <BrowserRouter>
+      {/* Enlace accesible para lectores de pantalla y navegación por teclado (WCAG 2.1 AA) */}
+      <a href="#main-content" className="skip-to-content">
+        Saltar al contenido principal
+      </a>
+
       <Routes>
         <Route element={<MainLayout />}>
-          {/* RUTAS PÚBLICAS */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/catalogo" element={<CatalogoPage />} />
-          <Route path="/catalogo/:id" element={<ProductoDetailPage />} />
-          <Route path="/academia/talleres" element={<TalleresPage />} />
-          <Route path="/privacidad" element={<PrivacidadPage />} />
-          <Route path="/terminos" element={<TerminosPage />} />
-          <Route path="/carrito" element={<CarritoPage />} />
+          {/* ===============================================================
+              RUTAS PÚBLICAS
+              =============================================================== */}
+          <Route
+            path="/"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <LandingPage />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/catalogo"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <CatalogoPage />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/catalogo/:id"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <ProductoDetailPage />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/academia/talleres"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <TalleresPage />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/privacidad"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <PrivacidadPage />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/terminos"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <TerminosPage />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/carrito"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <CarritoPage />
+              </React.Suspense>
+            }
+          />
 
-          {/* RUTAS DE INVITADOS (GUEST) */}
+          {/* ===============================================================
+              RUTAS DE INVITADOS (GUEST)
+              =============================================================== */}
           <Route
             path="/login"
             element={
               <GuestGuard>
-                <LoginPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <LoginPage />
+                </React.Suspense>
               </GuestGuard>
             }
           />
@@ -61,17 +202,23 @@ export const AppRouter: React.FC = () => {
             path="/registro"
             element={
               <GuestGuard>
-                <RegisterPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <RegisterPage />
+                </React.Suspense>
               </GuestGuard>
             }
           />
 
-          {/* RUTAS PROTEGIDAS CLIENTE / ALUMNO */}
+          {/* ===============================================================
+              RUTAS PROTEGIDAS CLIENTE / ALUMNO (AuthGuard)
+              =============================================================== */}
           <Route
             path="/dashboard"
             element={
               <AuthGuard>
-                <DashboardPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <DashboardPage />
+                </React.Suspense>
               </AuthGuard>
             }
           />
@@ -79,7 +226,9 @@ export const AppRouter: React.FC = () => {
             path="/checkout"
             element={
               <AuthGuard>
-                <CheckoutPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <CheckoutPage />
+                </React.Suspense>
               </AuthGuard>
             }
           />
@@ -87,7 +236,9 @@ export const AppRouter: React.FC = () => {
             path="/checkout/exito"
             element={
               <AuthGuard>
-                <CheckoutSuccessPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <CheckoutSuccessPage />
+                </React.Suspense>
               </AuthGuard>
             }
           />
@@ -95,7 +246,9 @@ export const AppRouter: React.FC = () => {
             path="/mis-compras"
             element={
               <AuthGuard>
-                <MisComprasPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <MisComprasPage />
+                </React.Suspense>
               </AuthGuard>
             }
           />
@@ -103,7 +256,9 @@ export const AppRouter: React.FC = () => {
             path="/mis-clases"
             element={
               <AuthGuard>
-                <MisClasesPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <MisClasesPage />
+                </React.Suspense>
               </AuthGuard>
             }
           />
@@ -111,23 +266,132 @@ export const AppRouter: React.FC = () => {
             path="/perfil"
             element={
               <AuthGuard>
-                <PerfilPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <PerfilPage />
+                </React.Suspense>
               </AuthGuard>
             }
           />
 
-          {/* RUTAS PROTEGIDAS ADMIN */}
+          {/* ===============================================================
+              RUTAS PROTEGIDAS PORTAL DOCENTE (AuthGuard)
+              =============================================================== */}
+          <Route
+            path="/docente/pase-lista"
+            element={
+              <AuthGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <PaseListaPage />
+                </React.Suspense>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/docente/bitacora"
+            element={
+              <AuthGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <BitacoraPage />
+                </React.Suspense>
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/docente/evaluaciones"
+            element={
+              <AuthGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <EvaluacionesPage />
+                </React.Suspense>
+              </AuthGuard>
+            }
+          />
+
+          {/* ===============================================================
+              RUTAS PROTEGIDAS ADMINISTRADOR (AdminGuard)
+              =============================================================== */}
           <Route
             path="/admin/dashboard"
             element={
               <AdminGuard>
-                <AdminDashboardPage />
+                <React.Suspense fallback={<PageLoader />}>
+                  <AdminDashboardPage />
+                </React.Suspense>
+              </AdminGuard>
+            }
+          />
+          <Route
+            path="/admin/inventario"
+            element={
+              <AdminGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <InventarioPage />
+                </React.Suspense>
+              </AdminGuard>
+            }
+          />
+          <Route
+            path="/admin/proveedores"
+            element={
+              <AdminGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <ProveedoresPage />
+                </React.Suspense>
+              </AdminGuard>
+            }
+          />
+          <Route
+            path="/admin/estados-cuenta"
+            element={
+              <AdminGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <EstadosCuentaPage />
+                </React.Suspense>
+              </AdminGuard>
+            }
+          />
+          <Route
+            path="/admin/aulas"
+            element={
+              <AdminGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <AulasPage />
+                </React.Suspense>
+              </AdminGuard>
+            }
+          />
+          <Route
+            path="/admin/pase-lista"
+            element={
+              <AdminGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <PaseListaAdminPage />
+                </React.Suspense>
+              </AdminGuard>
+            }
+          />
+          <Route
+            path="/admin/logs"
+            element={
+              <AdminGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <LogsAuditoriaPage />
+                </React.Suspense>
               </AdminGuard>
             }
           />
 
-          {/* 404 NOT FOUND */}
-          <Route path="*" element={<NotFoundPage />} />
+          {/* ===============================================================
+              404 NOT FOUND (CATCH-ALL)
+              =============================================================== */}
+          <Route
+            path="*"
+            element={
+              <React.Suspense fallback={<PageLoader />}>
+                <NotFoundPage />
+              </React.Suspense>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

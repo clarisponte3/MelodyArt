@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
-import { Music, ShoppingBag, User, LogOut, ChevronDown, Menu, X, Shield } from 'lucide-react';
+import { Music, ShoppingBag, User, LogOut, ChevronDown, Menu, X, Shield, ClipboardList, BookOpen, Award, Warehouse } from 'lucide-react';
 import { NeonButton } from '../components/ui/NeonButton';
 
 export const Navbar: React.FC = () => {
@@ -32,7 +32,7 @@ export const Navbar: React.FC = () => {
             <span className="font-neon text-3xl neon-text-yellow leading-none tracking-wide">
               SonoraSync
             </span>
-            <span className="text-[10px] tracking-widest uppercase text-neon-cyan/80 font-medium">
+            <span className="text-[10px] tracking-widest uppercase text-gray-300 font-medium">
               MelodyArt Enterprise
             </span>
           </div>
@@ -63,7 +63,7 @@ export const Navbar: React.FC = () => {
             className="text-gray-300 hover:text-neon-green transition-colors py-1 flex items-center gap-1.5"
           >
             <Shield className="w-4 h-4 text-neon-green" />
-            PROFECO & Garantías
+            Términos y Condiciones
           </Link>
         </nav>
 
@@ -137,15 +137,100 @@ export const Navbar: React.FC = () => {
                     Mis Clases & Asistencias
                   </Link>
 
-                  {role === 'ROLE_ADMIN' && (
+                  {/* VISTAS DOCENTES */}
+                  <div className="pt-1.5 border-t border-white/10">
+                    <span className="px-4 py-1 text-[10px] uppercase tracking-wider text-neon-yellow font-semibold block">
+                      Docente
+                    </span>
                     <Link
-                      to="/admin/dashboard"
+                      to="/docente/pase-lista"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-xs text-neon-green hover:bg-white/5 transition-colors border-t border-white/10"
+                      className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-yellow hover:bg-white/5 transition-colors"
                     >
-                      <Shield className="w-4 h-4" />
-                      Panel Administrativo
+                      <ClipboardList className="w-3.5 h-3.5 text-neon-yellow" />
+                      Pase de Lista
                     </Link>
+                    <Link
+                      to="/docente/bitacora"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-cyan hover:bg-white/5 transition-colors"
+                    >
+                      <BookOpen className="w-3.5 h-3.5 text-neon-cyan" />
+                      Bitácora Pedagógica
+                    </Link>
+                    <Link
+                      to="/docente/evaluaciones"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-pink hover:bg-white/5 transition-colors"
+                    >
+                      <Award className="w-3.5 h-3.5 text-neon-pink" />
+                      Evaluaciones
+                    </Link>
+                  </div>
+
+                  {/* VISTAS ADMINISTRATIVAS */}
+                  {role === 'ROLE_ADMIN' && (
+                    <div className="pt-1.5 border-t border-white/10">
+                      <span className="px-4 py-1 text-[10px] uppercase tracking-wider text-neon-green font-semibold block">
+                        Administración
+                      </span>
+                      <Link
+                        to="/admin/dashboard"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-neon-green hover:bg-white/5 transition-colors"
+                      >
+                        <Shield className="w-3.5 h-3.5" />
+                        Dashboard General
+                      </Link>
+                      <Link
+                        to="/admin/inventario"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-cyan hover:bg-white/5 transition-colors"
+                      >
+                        <Warehouse className="w-3.5 h-3.5 text-neon-cyan" />
+                        Inventario & Kardex
+                      </Link>
+                      <Link
+                        to="/admin/pase-lista"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-yellow hover:bg-white/5 transition-colors"
+                      >
+                        <ClipboardList className="w-3.5 h-3.5 text-neon-yellow" />
+                        Pase de Lista Admin
+                      </Link>
+                      <Link
+                        to="/admin/aulas"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-pink hover:bg-white/5 transition-colors"
+                      >
+                        <Music className="w-3.5 h-3.5 text-neon-pink" />
+                        Aulas & Talleres
+                      </Link>
+                      <Link
+                        to="/admin/estados-cuenta"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-orange hover:bg-white/5 transition-colors"
+                      >
+                        <Shield className="w-3.5 h-3.5 text-neon-orange" />
+                        Estados de Cuenta
+                      </Link>
+                      <Link
+                        to="/admin/proveedores"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-neon-green hover:bg-white/5 transition-colors"
+                      >
+                        <Warehouse className="w-3.5 h-3.5 text-neon-green" />
+                        Proveedores
+                      </Link>
+                      <Link
+                        to="/admin/logs"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-1.5 text-xs text-gray-300 hover:text-orange-400 hover:bg-white/5 transition-colors"
+                      >
+                        <Shield className="w-3.5 h-3.5 text-orange-400" />
+                        Logs de Auditoría
+                      </Link>
+                    </div>
                   )}
 
                   <button
@@ -225,7 +310,7 @@ export const Navbar: React.FC = () => {
             onClick={() => setIsMobileMenuOpen(false)}
             className="text-gray-200 hover:text-neon-green py-1"
           >
-            PROFECO & Garantías
+            Términos y Condiciones
           </Link>
 
           <div className="pt-4 border-t border-white/10 flex flex-col gap-3">

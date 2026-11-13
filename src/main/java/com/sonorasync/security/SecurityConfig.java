@@ -3,6 +3,7 @@ package com.sonorasync.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,95 +20,79 @@ import java.util.List;
 
 /**
  * Configuración central de Spring Security.
- *
- * <p>Define el {@link SecurityFilterChain} con las siguientes políticas:
- * <ul>
- *   <li><b>CSRF</b>: Deshabilitado (API REST stateless; el token JWT reemplaza la protección CSRF).</li>
- *   <li><b>Sesiones</b>: {@code STATELESS} — Spring Security no crea ni usa sesiones HTTP.</li>
- *   <li><b>CORS</b>: Permisivo para todos los orígenes y métodos (apropiado para desarrollo;
- *       restringir a dominios específicos en producción).</li>
- *   <li><b>Rutas públicas</b>: {@code /api/auth/**} accesible sin token.</li>
- *   <li><b>Resto</b>: Requiere autenticación JWT válida.</li>
- *   <li><b>Filtro JWT</b>: Se registra antes de {@link UsernamePasswordAuthenticationFilter}.</li>
- * </ul>
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity                // Habilita @PreAuthorize / @PostAuthorize para control fino por método
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
-    /**
-     * Define la cadena de filtros de seguridad de la aplicación.
-     *
-     * @param http el objeto {@link HttpSecurity} proporcionado por Spring Security
-     * @return el {@link SecurityFilterChain} configurado
-     * @throws Exception si falla alguna configuración de seguridad
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 1. Deshabilitar CSRF: innecesario en APIs REST con JWT stateless
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // 2. Configuración de CORS: permisiva para desarrollo/integración con frontend
+                // 2. Configuración de CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // 3. Autorización de rutas
                 .authorizeHttpRequests(auth -> auth
-                        // Rutas públicas: login y registro (Fase 7 puede agregar /api/auth/register)
+                        // Permitir preflight CORS (OPTIONS)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Rutas públicas de autenticación y creación/registro de usuario
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+                        .requestMatchers("/api/usuarios/registro", "/api/usuarios/register").permitAll()
                         // Todo lo demás requiere autenticación JWT válida
                         .anyRequest().authenticated()
                 )
 
-                // 4. Política de sesiones: STATELESS (no se almacena estado en el servidor)
+                // 4. Política de sesiones: STATELESS
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 5. Registrar el AuthenticationProvider personalizado (DaoAuthenticationProvider)
+                // 5. Registrar AuthenticationProvider personalizado
                 .authenticationProvider(authenticationProvider)
 
-                // 6. Insertar el filtro JWT ANTES del filtro de autenticación por formulario
+                // 6. Insertar filtro JWT antes de UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * Configuración de CORS permisiva para todos los orígenes.
-     *
-     * <p><b>Nota para producción en Render:</b> Reemplazar {@code "*"} en
-     * {@code allowedOriginPatterns} con el dominio real del frontend
-     * (ej. {@code "https://melodart.onrender.com"}) antes del despliegue final.
-     *
-     * @return la fuente de configuración CORS para Spring MVC
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Permite cualquier origen (usar allowedOriginPatterns en lugar de allowedOrigins
-        // para compatibilidad con allowCredentials si se necesita en el futuro)
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        // Autorizar orígenes locales de Vite (3000, 3001, 3002) y patrones globales
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:3002",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:3001",
+                "http://127.0.0.1:3002",
+                "*"
+        ));
 
         // Métodos HTTP permitidos
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-        // Headers permitidos en la petición (incluye Authorization para el JWT)
+        // Headers permitidos
         configuration.setAllowedHeaders(List.of("*"));
 
-        // Exponer el header Authorization en la respuesta (útil si el token se renueva)
+        // Headers expuestos
         configuration.setExposedHeaders(List.of("Authorization"));
 
-        // Permitir credenciales (cookies, Authorization header)
+        // Permitir credenciales
         configuration.setAllowCredentials(true);
 
-        // Pre-flight cache: 1 hora
+        // Pre-flight cache
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

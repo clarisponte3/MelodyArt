@@ -1,159 +1,284 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { BookOpen, Calendar } from 'lucide-react';
+import apiClient from '../../api/apiClient';
 import { GlassCard } from '../../components/ui/GlassCard';
-import { Music, Calendar, BookOpen } from 'lucide-react';
+import { NeonButton } from '../../components/ui/NeonButton';
+import type { InscripcionResponseDTO, AsistenciaClaseResponseDTO, SpringPage } from '../../types';
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+const estadoInscripcionBadge = (estado: string): string => {
+  switch (estado?.toUpperCase()) {
+    case 'ACTIVA':
+      return 'bg-neon-green/15 text-neon-green border border-neon-green/40';
+    case 'BAJA':
+      return 'bg-neon-pink/15 text-neon-pink border border-neon-pink/40';
+    default:
+      return 'bg-white/10 text-gray-400 border border-white/20';
+  }
+};
+
+const estadoAsistenciaBadge = (estado: string): string => {
+  switch (estado?.toUpperCase()) {
+    case 'PRESENTE':
+      return 'bg-neon-green/15 text-neon-green border border-neon-green/40';
+    case 'FALTA':
+      return 'bg-neon-pink/15 text-neon-pink border border-neon-pink/40';
+    case 'RETARDO':
+      return 'bg-neon-yellow/15 text-neon-yellow border border-neon-yellow/40';
+    case 'JUSTIFICADA':
+      return 'bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/40';
+    default:
+      return 'bg-white/10 text-gray-400 border border-white/20';
+  }
+};
+
+const formatDate = (iso: string): string =>
+  new Date(iso).toLocaleDateString('es-MX', { dateStyle: 'medium' });
+
+// ---------------------------------------------------------------------------
+// Tab IDs
+// ---------------------------------------------------------------------------
+type TabId = 'inscripciones' | 'asistencia';
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 export const MisClasesPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'inscripciones' | 'asistencia' | 'bitacoras'>('inscripciones');
+  const [activeTab, setActiveTab] = useState<TabId>('inscripciones');
 
+  // ---- Inscripciones state ----
+  const [inscripciones, setInscripciones] = useState<InscripcionResponseDTO[]>([]);
+  const [loadingInsc, setLoadingInsc] = useState(true);
+
+  // ---- Asistencias state ----
+  const [asistencias, setAsistencias] = useState<AsistenciaClaseResponseDTO[]>([]);
+  const [pageAsis, setPageAsis] = useState(0);
+  const [totalPagesAsis, setTotalPagesAsis] = useState(0);
+  const [loadingAsis, setLoadingAsis] = useState(false);
+
+  useEffect(() => {
+    apiClient
+      .get<SpringPage<InscripcionResponseDTO>>('/api/inscripciones?page=0&size=50')
+      .then((r) => setInscripciones(r.data.content ?? []))
+      .catch(() => setInscripciones([]))
+      .finally(() => setLoadingInsc(false));
+  }, []);
+
+  const fetchAsistencias = useCallback(async (p: number) => {
+    setLoadingAsis(true);
+    try {
+      const r = await apiClient.get<SpringPage<AsistenciaClaseResponseDTO>>(
+        `/api/asistencias?page=${p}&size=20`
+      );
+      setAsistencias(r.data.content ?? []);
+      setTotalPagesAsis(r.data.totalPages);
+    } catch {
+      setAsistencias([]);
+    } finally {
+      setLoadingAsis(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'asistencia') {
+      fetchAsistencias(pageAsis);
+    }
+  }, [activeTab, pageAsis, fetchAsistencias]);
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
   return (
-    <div className="container mx-auto px-6 py-12 max-w-5xl">
+    <div className="container mx-auto px-6 py-12">
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-1">Portal del Alumno: Mis Clases</h1>
-        <p className="text-xs text-gray-400">
-          Supervisa tus talleres musicales, calendario de clases, asistencias y bitácoras pedagógicas.
-        </p>
+        <span className="text-xs font-semibold text-neon-cyan uppercase tracking-widest">
+          Portal del Alumno
+        </span>
+        <h1 className="text-3xl font-bold text-white mt-2">Mis Clases Musicales</h1>
       </div>
 
-      {/* TABS */}
-      <div className="flex border-b border-white/10 gap-8 mb-8">
-        <button
-          onClick={() => setActiveTab('inscripciones')}
-          className={`pb-3 text-sm font-semibold transition-colors relative flex items-center gap-2 ${
-            activeTab === 'inscripciones' ? 'text-neon-cyan' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <Music className="w-4 h-4" />
-          <span>Mis Inscripciones</span>
-          {activeTab === 'inscripciones' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-neon-cyan shadow-neon-cyan" />
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('asistencia')}
-          className={`pb-3 text-sm font-semibold transition-colors relative flex items-center gap-2 ${
-            activeTab === 'asistencia' ? 'text-neon-pink' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <Calendar className="w-4 h-4" />
-          <span>Control de Asistencia</span>
-          {activeTab === 'asistencia' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-neon-pink shadow-neon-pink" />
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('bitacoras')}
-          className={`pb-3 text-sm font-semibold transition-colors relative flex items-center gap-2 ${
-            activeTab === 'bitacoras' ? 'text-neon-green' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          <BookOpen className="w-4 h-4" />
-          <span>Bitácoras de Progreso</span>
-          {activeTab === 'bitacoras' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-neon-green shadow-neon-green" />
-          )}
-        </button>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-8 glass-panel rounded-xl p-1 w-fit">
+        {(['inscripciones', 'asistencia'] as TabId[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setActiveTab(t)}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+              activeTab === t
+                ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            {t === 'inscripciones' ? 'Mis Inscripciones' : 'Mi Asistencia'}
+          </button>
+        ))}
       </div>
 
-      {/* CONTENIDO TAB 1: INSCRIPCIONES */}
+      {/* ------------------------------------------------------------------ */}
+      {/* TAB 1 — Inscripciones */}
+      {/* ------------------------------------------------------------------ */}
       {activeTab === 'inscripciones' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <GlassCard accent="cyan" className="p-6">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono text-neon-cyan">Taller #1</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neon-green/20 text-neon-green border border-neon-green/30">
-                ACTIVA
-              </span>
+        <>
+          {loadingInsc ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="glass-panel rounded-xl p-6 animate-pulse space-y-3">
+                  <div className="h-4 bg-white/10 rounded w-3/4" />
+                  <div className="h-3 bg-white/10 rounded w-1/2" />
+                  <div className="h-3 bg-white/10 rounded w-2/3" />
+                </div>
+              ))}
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Taller de Guitarra Clásica & Solfeo</h3>
-            <p className="text-xs text-gray-300 mb-4">Profesor Asignado: Lic. Carlos Santana</p>
-            <div className="text-xs text-gray-400 space-y-1 mb-4">
-              <div>Horario: Lunes y Miércoles 16:00 - 18:00 hrs</div>
-              <div>Aula: Aula 102 (Pianos y Cuerdas)</div>
+          ) : inscripciones.length === 0 ? (
+            <div className="glass-panel rounded-2xl p-16 text-center">
+              <BookOpen className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">Sin inscripciones</h3>
+              <p className="text-gray-400 text-sm">
+                Aún no estás inscrito en ninguna clase musical.
+              </p>
             </div>
-            <div className="pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-              <span className="text-gray-400">Costo Mensual:</span>
-              <span className="text-neon-pink font-bold font-mono">$1,450.00 MXN</span>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {inscripciones.map((ins) => (
+                <GlassCard
+                  key={ins.idInscripcion}
+                  accent={ins.estado === 'ACTIVA' ? 'cyan' : 'pink'}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-bold text-white text-base leading-tight">
+                      {ins.clase.nombre}
+                    </h3>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 ml-2 ${estadoInscripcionBadge(
+                        ins.estado
+                      )}`}
+                    >
+                      {ins.estado}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {ins.clase.horario}
+                  </p>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Inscrito el {formatDate(ins.fechaInscripcion)}
+                  </p>
+                  <div className="border-t border-white/10 pt-3 flex items-center justify-between">
+                    <span className="text-xs text-gray-400">Costo acordado</span>
+                    <span className="text-sm font-bold text-neon-green">
+                      ${ins.costoAcordado.toFixed(2)}
+                    </span>
+                  </div>
+                </GlassCard>
+              ))}
             </div>
-          </GlassCard>
-
-          <GlassCard accent="pink" className="p-6">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono text-neon-pink">Taller #2</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neon-green/20 text-neon-green border border-neon-green/30">
-                ACTIVA
-              </span>
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">Taller de Ukelele Creativo</h3>
-            <p className="text-xs text-gray-300 mb-4">Profesora Asignada: Mtra. Ana Victoria</p>
-            <div className="text-xs text-gray-400 space-y-1 mb-4">
-              <div>Horario: Martes y Jueves 17:00 - 18:30 hrs</div>
-              <div>Aula: Aula 104 (Iniciación Acústica)</div>
-            </div>
-            <div className="pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-              <span className="text-gray-400">Costo Mensual:</span>
-              <span className="text-neon-pink font-bold font-mono">$1,100.00 MXN</span>
-            </div>
-          </GlassCard>
-        </div>
+          )}
+        </>
       )}
 
-      {/* CONTENIDO TAB 2: ASISTENCIA */}
+      {/* ------------------------------------------------------------------ */}
+      {/* TAB 2 — Asistencia */}
+      {/* ------------------------------------------------------------------ */}
       {activeTab === 'asistencia' && (
-        <div className="glass-table-container">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-dark-900/80 border-b border-white/10 text-neon-pink uppercase text-[11px]">
-              <tr>
-                <th className="py-4 px-6">Fecha de Clase</th>
-                <th className="py-4 px-4">Taller Musical</th>
-                <th className="py-4 px-4">Estado</th>
-                <th className="py-4 px-6">Observaciones del Docente</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              <tr className="glass-table-row">
-                <td className="py-4 px-6 font-mono text-gray-300">2026-11-02</td>
-                <td className="py-4 px-4 text-white font-medium">Guitarra Clásica</td>
-                <td className="py-4 px-4">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neon-green/20 text-neon-green border border-neon-green/30">
-                    PRESENTE
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-gray-300">Puntual, presentó estudio de escalas mayores completas.</td>
-              </tr>
-              <tr className="glass-table-row">
-                <td className="py-4 px-6 font-mono text-gray-300">2026-10-28</td>
-                <td className="py-4 px-4 text-white font-medium">Guitarra Clásica</td>
-                <td className="py-4 px-4">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neon-green/20 text-neon-green border border-neon-green/30">
-                    PRESENTE
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-gray-300">Excelente digitación en arpegios de mano derecha.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
+        <>
+          {loadingAsis ? (
+            <div className="glass-table-container rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-white/5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      {Array.from({ length: 4 }).map((__, j) => (
+                        <td key={j} className="px-6 py-4">
+                          <div className="h-3 bg-white/10 rounded w-24" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : asistencias.length === 0 ? (
+            <div className="glass-panel rounded-2xl p-16 text-center">
+              <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">Sin registros de asistencia</h3>
+              <p className="text-gray-400 text-sm">
+                Tus asistencias aparecerán aquí una vez que el docente las registre.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="glass-table-container rounded-xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/10 text-gray-500 uppercase text-xs">
+                      {['Fecha', 'Clase', 'Estado', 'Observaciones'].map((h) => (
+                        <th key={h} className="px-6 py-4 text-left font-medium">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {asistencias.map((a) => (
+                      <tr key={a.idAsistencia} className="glass-table-row">
+                        <td className="px-6 py-4 text-gray-300">
+                          {formatDate(a.fechaClase)}
+                        </td>
+                        <td className="px-6 py-4 text-white font-medium">
+                          {a.inscripcion?.clase?.nombre ?? '—'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-xs font-semibold ${estadoAsistenciaBadge(
+                              a.estado
+                            )}`}
+                          >
+                            {a.estado}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-gray-400 text-xs">
+                          {a.observaciones ?? '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-      {/* CONTENIDO TAB 3: BITÁCORAS */}
-      {activeTab === 'bitacoras' && (
-        <div className="space-y-4">
-          <GlassCard accent="gold" className="p-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-neon-yellow font-mono">Sesión: 02 de Noviembre, 2026</span>
-              <span className="text-xs text-gray-400">Taller de Guitarra Clásica</span>
-            </div>
-            <h4 className="text-base font-bold text-white mb-2">Tema Trabajado: Armónicos Naturales y Cejilla</h4>
-            <p className="text-xs text-gray-300 mb-3 leading-relaxed">
-              <strong>Comentarios Pedagógicos:</strong> Se repasó la posición del pulgar izquierdo en cambios de posición del traste 5 al 9. Muy buen avance rítmico.
-            </p>
-            <div className="p-3 rounded-lg bg-dark-900 border border-white/10 text-xs text-neon-green">
-              <strong>Próxima Meta:</strong> Memorizar los compases 1 al 16 del Estudio en Mi menor de Tárrega.
-            </div>
-          </GlassCard>
-        </div>
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-6">
+                <span className="text-sm text-gray-400">
+                  Página{' '}
+                  <span className="text-white font-semibold">{pageAsis + 1}</span> de{' '}
+                  <span className="text-white font-semibold">{totalPagesAsis}</span>
+                </span>
+                <div className="flex gap-3">
+                  <NeonButton
+                    variant="cyan"
+                    onClick={() => setPageAsis((p) => Math.max(0, p - 1))}
+                    disabled={pageAsis === 0}
+                    className="text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    ← Anterior
+                  </NeonButton>
+                  <NeonButton
+                    variant="cyan"
+                    onClick={() =>
+                      setPageAsis((p) => Math.min(totalPagesAsis - 1, p + 1))
+                    }
+                    disabled={pageAsis >= totalPagesAsis - 1}
+                    className="text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Siguiente →
+                  </NeonButton>
+                </div>
+              </div>
+            </>
+          )}
+        </>
       )}
     </div>
   );

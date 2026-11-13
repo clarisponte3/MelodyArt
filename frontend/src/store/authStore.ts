@@ -8,7 +8,7 @@ interface AuthState {
   role: UserRole | null;
   isAuthenticated: boolean;
   login: (authResponse: AuthResponseDTO) => void;
-  logout: (reason?: string) => void;
+  logout: (reason?: string, silent?: boolean) => void;
   checkSession: () => boolean;
 }
 
@@ -83,7 +83,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     showToast('success', `¡Bienvenido de nuevo, ${session.nombre}!`, 'Sesión Iniciada');
   },
 
-  logout: (reason?: string) => {
+  logout: (reason?: string, silent = false) => {
     sessionStorage.removeItem(STORAGE_KEY);
     set({
       token: null,
@@ -91,6 +91,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       role: null,
       isAuthenticated: false,
     });
+
+    if (silent) {
+      return;
+    }
 
     if (reason) {
       showToast('warning', reason, 'Sesión Finalizada');

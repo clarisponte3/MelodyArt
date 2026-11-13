@@ -1,0 +1,1 @@
+import{j as o}from"./index-B0BjwgZQ.js";const e=({children:s,accent:a="cyan",className:n=""})=>{const l={cyan:"glass-panel",pink:"glass-panel-pink",gold:"glass-panel-gold"};return o.jsx("div",{className:`p-6 rounded-xl transition-all duration-300 ${l[a]} ${n}`,children:s})};export{e as G};

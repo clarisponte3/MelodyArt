@@ -19,28 +19,28 @@
      EFECTOS DE TEXTO NEÓN (TEXT-SHADOW GLOW)
      =========================================================================== */
   .neon-text-yellow {
-    color: #FFE800;
-    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #FFE800, 0 0 40px #FFE800;
+    color: #FFF8E0;
+    text-shadow: 0 0 2px #FFE800, 0 0 15px #FFE800, 0 0 35px #CC9900;
   }
 
   .neon-text-cyan {
-    color: #00F3FF;
-    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #00F3FF, 0 0 40px #00F3FF;
+    color: #E0FEFF;
+    text-shadow: 0 0 2px #00F3FF, 0 0 15px #00F3FF, 0 0 35px #009DAA;
   }
 
   .neon-text-pink {
-    color: #FF00FF;
-    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #FF00FF, 0 0 40px #FF00FF;
+    color: #FFE0FF;
+    text-shadow: 0 0 2px #FF00FF, 0 0 15px #FF00FF, 0 0 35px #AA00AA;
   }
 
   .neon-text-green {
-    color: #00FF66;
-    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #00FF66, 0 0 40px #00FF66;
+    color: #E0FFF0;
+    text-shadow: 0 0 2px #00FF66, 0 0 15px #00FF66, 0 0 35px #00AA44;
   }
 
   .neon-text-orange {
-    color: #FF5E00;
-    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #FF5E00, 0 0 40px #FF5E00;
+    color: #FFF0E0;
+    text-shadow: 0 0 2px #FF5E00, 0 0 15px #FF5E00, 0 0 35px #AA3D00;
   }
 
   /* Versiones sutiles para letreros de tamaño medio */
@@ -113,3 +113,46 @@
     box-shadow: inset 0 0 12px rgba(0, 243, 255, 0.08);
   }
 }
+
+/* ===========================================================================
+   WCAG 2.1 AA ACCESSIBILITY & FOCUS VISIBLE ENHANCEMENTS
+   =========================================================================== */
+:focus-visible {
+  outline: 2px solid #00F3FF;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Enlace accesible para saltar directo al contenido principal */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #050505;
+  color: #00F3FF;
+  padding: 8px 16px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 9999;
+  border: 1px solid #00F3FF;
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Utilidad para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+

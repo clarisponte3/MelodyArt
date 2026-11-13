@@ -12,6 +12,23 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
+  },
+  preview: {
+    port: 4173,
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          store: ['zustand'],
+          http: ['axios'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+    sourcemap: false,
+    minify: 'esbuild',
   },
 });
